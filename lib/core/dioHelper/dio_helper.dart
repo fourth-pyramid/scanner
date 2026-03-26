@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_classes_with_only_static_members
 
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:qrscanner/core/appStorage/app_storage.dart';
 
 class DioHelper {
@@ -24,7 +23,6 @@ class DioHelper {
     if (!formattedUrl.endsWith('/')) formattedUrl += '/';
     if (!formattedUrl.contains('api/v1')) formattedUrl += 'api/v1/';
     dioSingleton.options.baseUrl = formattedUrl;
-    debugPrint('🌐 Base URL updated to: $formattedUrl');
   }
 
   // Initialize with saved base URL or default
@@ -32,8 +30,6 @@ class DioHelper {
     final savedBaseUrl = AppStorage.getBaseUrl;
     if (savedBaseUrl != null && savedBaseUrl.isNotEmpty) {
       updateBaseUrl(savedBaseUrl);
-    } else {
-      debugPrint('🌐 Using default Base URL: $_defaultBaseUrl');
     }
   }
 

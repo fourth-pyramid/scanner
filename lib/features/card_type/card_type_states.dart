@@ -1,4 +1,9 @@
-abstract class CardTypeStates {}
+import 'package:equatable/equatable.dart';
+
+abstract class CardTypeStates extends Equatable {
+  @override
+  List<Object?> get props => [];
+}
 
 class CardTypeInitial extends CardTypeStates {}
 

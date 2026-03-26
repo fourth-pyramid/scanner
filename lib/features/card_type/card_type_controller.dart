@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qrscanner/common_component/snack_bar.dart';
 import 'package:qrscanner/core/appStorage/get_categories_model.dart';
@@ -12,35 +11,36 @@ class CardTypeController extends Cubit<CardTypeStates> {
 
   GetCategoriesModel? getCategoriesModel;
 
-  void getCategories() {
+  void getCategories() async {
     emit(CardTypeLoading());
-    DioHelper.get('category')
-        .then((value) {
-          final data = value.data as Map<String, dynamic>;
-          getCategoriesModel = GetCategoriesModel.fromJson(data);
-          emit(CardTypeSuccess());
-          debugPrint(getCategoriesModel?.data?.length.toString());
-        })
-        .catchError((error) {
-          emit(CardTypeError());
-        });
+
+    try {
+      final value = await DioHelper.get('category');
+      final data = value.data as Map<String, dynamic>;
+      getCategoriesModel = GetCategoriesModel.fromJson(data);
+      emit(CardTypeSuccess());
+    } catch (error) {
+      emit(CardTypeError());
+    }
   }
 
-  void clearData() {
+  void clearData() async {
     emit(CardTypeLoading());
-    DioHelper.post('delete', true, body: {})
-        .then((value) {
-          final data = value.data as Map<String, dynamic>;
-          if (data['status'] == 1) {
-            showSnackBar('Deleted Sucessfully');
-            emit(CardTypeSuccess());
-          } else {
-            showSnackBar(data['message']);
-            emit(CardTypeError());
-          }
-        })
-        .catchError((error) {
-          emit(CardTypeError());
-        });
+
+    try {
+      final value = await DioHelper.post('delete', true, body: {});
+      final data = value.data as Map<String, dynamic>;
+
+      if (data['status'] == 1) {
+        showSnackBar('Deleted Sucessfully');
+        emit(CardTypeSuccess());
+      } else {
+        final message = data['message'] ?? 'Unknown error';
+        showSnackBar(message);
+        emit(CardTypeError());
+      }
+    } catch (error) {
+      emit(CardTypeError());
+    }
   }
 }

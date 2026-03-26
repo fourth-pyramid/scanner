@@ -1,4 +1,9 @@
-abstract class ExtractImageStates {}
+import 'package:equatable/equatable.dart';
+
+abstract class ExtractImageStates extends Equatable {
+  @override
+  List<Object?> get props => [];
+}
 
 class ExtractInitial extends ExtractImageStates {}
 

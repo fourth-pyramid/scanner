@@ -7,20 +7,28 @@ void showSnackBar(
   String message, {
   bool upperSnackBar = false,
   bool popPage = false,
-  int duration = 5,
+  int duration = 2,
   Color color = const Color.fromRGBO(31, 43, 70, 1),
 }) {
-  ScaffoldMessenger.of(MagicRouter.currentContext).hideCurrentSnackBar();
-  ScaffoldMessenger.of(MagicRouter.currentContext).showSnackBar(
+  final context = MagicRouter.currentContext;
+  if (!context.mounted) return;
+
+  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       backgroundColor: color,
       behavior: SnackBarBehavior.floating,
-      margin: upperSnackBar ? const EdgeInsets.only(bottom: 20) : null,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-      content: Text(message, style: const TextStyle(color: Colors.white)),
-      action: SnackBarAction(label: '', onPressed: () {}),
+      margin: upperSnackBar
+          ? const EdgeInsets.only(bottom: 600)
+          : const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      content: Text(
+        message,
+        style: const TextStyle(color: Colors.white, fontSize: 14),
+      ),
       duration: Duration(seconds: duration),
+      // Removed SnackBarAction - it was preventing auto-dismiss
     ),
   );
-  if (popPage) Timer(const Duration(seconds: 5), MagicRouter.pop);
+  if (popPage) Timer(Duration(seconds: duration), MagicRouter.pop);
 }

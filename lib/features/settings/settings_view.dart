@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qrscanner/common_component/custom_button.dart';
 import 'package:qrscanner/common_component/custom_text_field.dart';
+import 'package:qrscanner/common_component/server_type_indicator.dart';
 import 'package:qrscanner/constant.dart';
 import 'package:qrscanner/core/router/router.dart';
 import 'package:qrscanner/features/login/login_view.dart';
@@ -16,7 +17,6 @@ class SettingsView extends StatelessWidget {
     return BlocProvider(
       create: (context) => SettingsController()..loadCurrentSettings(),
       child: Scaffold(
-        backgroundColor: Colors.white,
         appBar: AppBar(
           title: const Text('Settings'),
           foregroundColor: Colors.white,
@@ -27,34 +27,28 @@ class SettingsView extends StatelessWidget {
           child: ListView(
             children: [
               // const CustomAppBar(text: 'Settings'),
+              // Optimization: Only rebuild when settings state changes
               BlocBuilder<SettingsController, SettingsStates>(
+                buildWhen: (previous, current) =>
+                    previous.runtimeType != current.runtimeType,
                 builder: (context, state) {
                   final controller = SettingsController.of(context);
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(
-                      vertical: 15.0,
-                      horizontal: 22,
+                      vertical: 20.0,
+                      horizontal: 10,
                     ),
                     child: Form(
                       key: controller.formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Server Address',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: colorPrimary,
-                            ),
-                          ),
-
                           // -------- Text Field --------
                           CustomTextField(
                             hint:
                                 'Enter IP (192.168.x.x:8000) or domain (bestscan.store)',
-                            lableText: 'Server Address',
+                            labelText: 'Server Address',
                             controller: controller.ipController,
                             onChanged: (_) {
                               // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
@@ -71,58 +65,9 @@ class SettingsView extends StatelessWidget {
                           const SizedBox(height: 10),
 
                           // -------- Server Type Detector --------
-                          Builder(
-                            builder: (context) {
-                              final text = controller.ipController.text.trim();
-
-                              if (text.isEmpty) {
-                                return const SizedBox();
-                              }
-
-                              final isIP = RegExp(
-                                r'^(\d{1,3}\.){3}\d{1,3}(:\d+)?$',
-                              ).hasMatch(text);
-
-                              return Container(
-                                padding: const EdgeInsets.all(12),
-                                margin: const EdgeInsets.only(top: 6),
-                                decoration: BoxDecoration(
-                                  color: isIP
-                                      ? Colors.green.withAlpha(
-                                          (0.12 * 255).toInt(),
-                                        )
-                                      : Colors.blue.withAlpha(
-                                          (0.12 * 255).toInt(),
-                                        ),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: isIP ? Colors.green : Colors.blue,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      isIP ? Icons.wifi : Icons.cloud_outlined,
-                                      color: isIP ? Colors.green : Colors.blue,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        isIP
-                                            ? 'Local server detected\nhttp://$text'
-                                            : 'Production server detected\nhttps://$text',
-                                        style: TextStyle(
-                                          color: isIP
-                                              ? Colors.green[900]
-                                              : Colors.blue[900],
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+                          // Optimization: Use separate widget to minimize rebuilds
+                          ServerTypeIndicator(
+                            text: controller.ipController.text.trim(),
                           ),
 
                           const SizedBox(height: 30),
@@ -133,7 +78,9 @@ class SettingsView extends StatelessWidget {
                             onPress: () {
                               if (controller.formKey.currentState!.validate()) {
                                 controller.saveSettings();
-                                MagicRouter.navigateTo(const LogInView());
+                                MagicRouter.navigateToReplacment(
+                                  const LogInView(),
+                                );
                               }
                             },
                           ),

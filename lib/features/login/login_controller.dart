@@ -25,9 +25,15 @@ class LogInController extends Cubit<LoginStates> {
   bool get isLoading => state is LoginLoading;
 
   void login() async {
-    if (isLoading) return;
+    // Safe optimization: Prevent duplicate login attempts
+    if (isLoading) {
+      return;
+    }
 
-    if (!formKey.currentState!.validate()) return;
+    // Form validation
+    if (!formKey.currentState!.validate()) {
+      return;
+    }
 
     emit(LoginLoading());
 
@@ -38,12 +44,8 @@ class LogInController extends Cubit<LoginStates> {
       'phone': phoneType,
     };
 
-    debugPrint('📤 Attempting login with: $body');
-    debugPrint('🌐 Base URL: ${DioHelper.dioSingleton.options.baseUrl}');
-
     try {
       final response = await DioHelper.post('login', false, body: body);
-      debugPrint('✅ Login Response: ${response.data}');
 
       final data = response.data as Map<String, dynamic>;
       final message = data['massage'] ?? 'login failed';
@@ -52,11 +54,9 @@ class LogInController extends Cubit<LoginStates> {
         try {
           userModel = UserModel.fromJson(data);
           await AppStorage.cacheUserInfo(userModel!);
-
           MagicRouter.navigateAndPopAll(const CardScannerView());
           emit(LoginSuccess(userModel!));
         } catch (e) {
-          debugPrint('❌ UserModel Parsing Error: $e');
           showSnackBar('Invalid user data received.');
           emit(LoginError());
         }
@@ -73,7 +73,6 @@ class LogInController extends Cubit<LoginStates> {
       showSnackBar('Connection timeout. Server is not responding.');
       emit(LoginError());
     } catch (e) {
-      debugPrint('❌ Unexpected Login Error: $e');
       showSnackBar('Connection error. Please check your network or server.');
       emit(LoginError());
     }

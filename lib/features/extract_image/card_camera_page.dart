@@ -465,7 +465,6 @@ class _CardFramePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     // حجم المربع (Square - نفس العرض والطول)
-    //TODO: adjust square size if needed
     final squareSize = size.width * 0.85;
 
     final left = (size.width - squareSize) / 2;

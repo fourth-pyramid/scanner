@@ -10,11 +10,23 @@ import 'package:qrscanner/features/extract_image/extract_image_view.dart';
 class CardTypeView extends StatelessWidget {
   const CardTypeView({super.key});
 
+  // Optimization: Cache fallback images as const static
+  static const List<String> _fallbackImages = [
+    'assets/images/20.jpeg',
+    'assets/images/25.jpeg',
+    'assets/images/30.jpeg',
+    'assets/images/50.jpeg',
+    'assets/images/100.jpeg',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => CardTypeController()..getCategories(),
+      // Optimization: Only rebuild when state changes from loading
       child: BlocBuilder<CardTypeController, CardTypeStates>(
+        buildWhen: (previous, current) =>
+            previous.runtimeType != current.runtimeType,
         builder: (context, state) {
           final controller = CardTypeController.of(context);
 
@@ -51,21 +63,13 @@ class CardTypeView extends StatelessWidget {
                               itemCount:
                                   controller.getCategoriesModel!.data!.length,
                               itemBuilder: (context, index) {
-                                final fallbackImages = [
-                                  'assets/images/20.jpeg',
-                                  'assets/images/25.jpeg',
-                                  'assets/images/30.jpeg',
-                                  'assets/images/50.jpeg',
-                                  'assets/images/100.jpeg',
-                                ];
                                 final filteredList =
                                     controller.getCategoriesModel!.data!;
-
                                 final item = filteredList[index];
-
+                                // Optimization: Use const static fallback images
                                 final fallbackImage =
-                                    fallbackImages[index %
-                                        fallbackImages.length];
+                                    _fallbackImages[index %
+                                        _fallbackImages.length];
 
                                 return InkWell(
                                   onTap: () {

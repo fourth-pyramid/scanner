@@ -13,7 +13,13 @@ class SettingsController extends Cubit<SettingsStates> {
   final TextEditingController ipController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
-  /// Load the saved URL into the text ﬁeld
+  // Safe optimization: Cache NetworkInfo instance to avoid repeated creation
+  final NetworkInfo _networkInfo = NetworkInfo();
+
+  // Safe optimization: Pre-compile regex for better performance
+  static final RegExp _ipPattern = RegExp(r'^(\d{1,3}\.){3}\d{1,3}(:\d+)?$');
+
+  /// Load the saved URL into the text field
   void loadCurrentSettings() {
     final savedBaseUrl = AppStorage.getBaseUrl;
 
@@ -26,18 +32,15 @@ class SettingsController extends Cubit<SettingsStates> {
   /// Auto-detect Wi-Fi IP
   Future<void> getMyIP() async {
     try {
-      final info = NetworkInfo();
-      final wifiIP = await info.getWifiIP();
+      // Safe optimization: Use cached NetworkInfo instance
+      final wifiIP = await _networkInfo.getWifiIP();
 
       if (wifiIP != null && wifiIP.isNotEmpty) {
         ipController.text = '$wifiIP:8000';
-        // showSnackBar('IP detected: $wifiIP');
         emit(SettingsLoaded());
-      } else {
-        // showSnackBar('Could not detect IP. Check Wi-Fi.');
       }
     } catch (e) {
-      // showSnackBar('Error getting IP: $e');
+      // Error detecting IP
     }
   }
 
@@ -48,10 +51,9 @@ class SettingsController extends Cubit<SettingsStates> {
     if (text.isEmpty) {
       // Default to production if empty
       const baseUrl = 'https://bestscan.store';
+
       AppStorage.cacheBaseUrl(baseUrl);
       DioHelper.updateBaseUrl(baseUrl);
-
-      // showSnackBar('Using default production server.');
       emit(SettingsSaved());
       return;
     }
@@ -59,10 +61,9 @@ class SettingsController extends Cubit<SettingsStates> {
     // Detect if user wrote IP → Local
     if (_isIP(text)) {
       final baseUrl = 'http://$text';
+
       AppStorage.cacheBaseUrl(baseUrl);
       DioHelper.updateBaseUrl(baseUrl);
-
-      // showSnackBar('Local server saved successfully!');
       emit(SettingsSaved());
       return;
     }
@@ -73,17 +74,13 @@ class SettingsController extends Cubit<SettingsStates> {
 
     AppStorage.cacheBaseUrl(baseUrl);
     DioHelper.updateBaseUrl(baseUrl);
-
-    // showSnackBar('Production server saved.');
     emit(SettingsSaved());
   }
 
   /// Detect Local IP (e.g., 192.168.x.x)
+  /// Safe optimization: Uses pre-compiled static regex for better performance
   bool _isIP(String text) {
-    final ipPattern = RegExp(
-      r'^(\d{1,3}\.){3}\d{1,3}(:\d+)?$',
-    ); // 192.168.1.10:8000
-    return ipPattern.hasMatch(text);
+    return _ipPattern.hasMatch(text);
   }
 
   /// Clean full URL to only the domain/IP

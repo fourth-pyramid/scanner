@@ -7,10 +7,13 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Route<dynamic>? onGenerateRoute(RouteSettings settings) => null;
 
 class MagicRouter {
-  static BuildContext currentContext = navigatorKey.currentContext!;
+  static BuildContext get currentContext => navigatorKey.currentContext!;
 
   static Future<dynamic>? navigateTo(Widget page) =>
       navigatorKey.currentState?.push(_materialPageRoute(page));
+
+  static Future<dynamic>? navigateToReplacment(Widget page) =>
+      navigatorKey.currentState?.pushReplacement(_materialPageRoute(page));
 
   static Future<dynamic>? navigateAndPopAll(Widget page) => navigatorKey
       .currentState

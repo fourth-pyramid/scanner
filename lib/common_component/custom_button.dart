@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qrscanner/common_component/custom_text.dart';
 import 'package:qrscanner/constant.dart';
 
+@immutable
 class CustomButton extends StatelessWidget {
   const CustomButton({
     super.key,
@@ -16,6 +17,7 @@ class CustomButton extends StatelessWidget {
     this.bgColor,
     this.borderColor,
     this.fontColor,
+    this.isLoading = false,
   });
 
   final String text;
@@ -29,6 +31,12 @@ class CustomButton extends StatelessWidget {
   final Color? bgColor;
   final Color? borderColor;
   final Color? fontColor;
+  final bool isLoading;
+
+  // Optimization: Cache gradient as const static
+  static const LinearGradient _defaultGradient = LinearGradient(
+    colors: [Color.fromRGBO(31, 43, 70, 1), Color.fromRGBO(134, 159, 216, 1)],
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -36,25 +44,31 @@ class CustomButton extends StatelessWidget {
     final hasContent = (isIcon && icon != null) || text.isNotEmpty;
 
     return InkWell(
-      onTap: onPress,
+      // Disable button when loading
+      onTap: isLoading ? null : onPress,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: widthButton,
         height: heightButton ?? MediaQuery.of(context).size.height * 0.08,
         decoration: BoxDecoration(
           color: bgColor ?? colorPrimary,
-          gradient: bgColor != null
-              ? null
-              : const LinearGradient(
-                  colors: [
-                    Color.fromRGBO(31, 43, 70, 1),
-                    Color.fromRGBO(134, 159, 216, 1),
-                  ],
-                ),
+          // Optimization: Use cached const gradient
+          gradient: bgColor != null ? null : _defaultGradient,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: borderColor ?? Colors.white),
         ),
-        child: hasContent
+        child: isLoading
+            ? const Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 2.5,
+                  ),
+                ),
+              )
+            : hasContent
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

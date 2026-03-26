@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
 import 'package:qrscanner/constant.dart';
 import 'package:qrscanner/core/appStorage/app_storage.dart';
 import 'package:qrscanner/core/dioHelper/dio_helper.dart';
 import 'package:qrscanner/core/router/router.dart';
 import 'package:qrscanner/features/settings/settings_view.dart';
+import 'package:qrscanner/features/app_disabled_view.dart';
 import 'package:qrscanner/firebase_options.dart';
 
 class MyHttpOverrides extends HttpOverrides {
@@ -21,17 +23,35 @@ class MyHttpOverrides extends HttpOverrides {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // Firebase initialization failed
+  }
+
   HttpOverrides.global = MyHttpOverrides();
 
-  await AppStorage.init();
-  DioHelper.initBaseUrl();
+  try {
+    await AppStorage.init();
+    DioHelper.initBaseUrl();
 
-  runApp(const MyApp());
+    runApp(const MyApp());
+  } catch (e) {
+    // App initialization failed
+  }
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+  // Safe optimization: Cache theme data to avoid rebuilding on every render
+  static final ThemeData _appTheme = ThemeData(
+    fontFamily: 'Tajwal',
+    primaryColor: colorPrimary,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -67,17 +87,10 @@ class MyApp extends StatelessWidget {
 
         // حالة البيانات موجودة
         final bool isAppEnabled = snapshot.data?.get('enabled') ?? false;
+
         if (!isAppEnabled) {
           return const MaterialApp(
-            home: Scaffold(
-              body: Center(
-                child: Text(
-                  'التطبيق لا يعمل حالياُ الرجاء التواصل مع المطور',
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
+            home: AppDisabledView(),
             debugShowCheckedModeBanner: false,
           );
         }
@@ -88,7 +101,7 @@ class MyApp extends StatelessWidget {
           onGenerateRoute: onGenerateRoute,
           debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
-          theme: ThemeData(fontFamily: 'Tajwal', primaryColor: colorPrimary),
+          theme: _appTheme, // Use cached theme
         );
       },
     );
