@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
-const String _font = 'Tajwal';
+final _baseTextStyle = GoogleFonts.cairo();
 
 class AppTextStyles {
   AppTextStyles._();
 
   // ─── Display ───
-  static const TextStyle displayLarge = TextStyle(
-    fontFamily: _font,
+  static final TextStyle displayLarge = _baseTextStyle.copyWith(
     fontSize: 28,
     fontWeight: FontWeight.w700,
     color: colorTextPrimary,
@@ -17,24 +17,21 @@ class AppTextStyles {
   );
 
   // ─── Titles ───
-  static const TextStyle titleLarge = TextStyle(
-    fontFamily: _font,
+  static final TextStyle titleLarge = _baseTextStyle.copyWith(
     fontSize: 20,
     fontWeight: FontWeight.w600,
     color: colorTextPrimary,
     height: 1.35,
   );
 
-  static const TextStyle titleMedium = TextStyle(
-    fontFamily: _font,
+  static final TextStyle titleMedium = _baseTextStyle.copyWith(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     color: colorTextPrimary,
     height: 1.4,
   );
 
-  static const TextStyle titleSmall = TextStyle(
-    fontFamily: _font,
+  static final TextStyle titleSmall = _baseTextStyle.copyWith(
     fontSize: 15,
     fontWeight: FontWeight.w600,
     color: colorTextPrimary,
@@ -42,24 +39,21 @@ class AppTextStyles {
   );
 
   // ─── Body ───
-  static const TextStyle bodyLarge = TextStyle(
-    fontFamily: _font,
+  static final TextStyle bodyLarge = _baseTextStyle.copyWith(
     fontSize: 16,
     fontWeight: FontWeight.w400,
     color: colorTextPrimary,
     height: 1.5,
   );
 
-  static const TextStyle bodyMedium = TextStyle(
-    fontFamily: _font,
+  static final TextStyle bodyMedium = _baseTextStyle.copyWith(
     fontSize: 14,
     fontWeight: FontWeight.w400,
     color: colorTextSecondary,
     height: 1.5,
   );
 
-  static const TextStyle bodySmall = TextStyle(
-    fontFamily: _font,
+  static final TextStyle bodySmall = _baseTextStyle.copyWith(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     color: colorTextSecondary,
@@ -67,23 +61,20 @@ class AppTextStyles {
   );
 
   // ─── Labels / UI ───
-  static const TextStyle labelLarge = TextStyle(
-    fontFamily: _font,
+  static final TextStyle labelLarge = _baseTextStyle.copyWith(
     fontSize: 15,
     fontWeight: FontWeight.w600,
     color: colorSurface,
     letterSpacing: 0.3,
   );
 
-  static const TextStyle labelMedium = TextStyle(
-    fontFamily: _font,
+  static final TextStyle labelMedium = _baseTextStyle.copyWith(
     fontSize: 13,
     fontWeight: FontWeight.w500,
     color: colorTextSecondary,
   );
 
-  static const TextStyle labelSmall = TextStyle(
-    fontFamily: _font,
+  static final TextStyle labelSmall = _baseTextStyle.copyWith(
     fontSize: 11,
     fontWeight: FontWeight.w500,
     color: colorTextHint,
@@ -91,8 +82,7 @@ class AppTextStyles {
   );
 
   // ─── Button ───
-  static const TextStyle button = TextStyle(
-    fontFamily: _font,
+  static final TextStyle button = _baseTextStyle.copyWith(
     fontSize: 16,
     fontWeight: FontWeight.w600,
     color: colorSurface,
@@ -100,15 +90,13 @@ class AppTextStyles {
   );
 
   // ─── Input ───
-  static const TextStyle inputText = TextStyle(
-    fontFamily: _font,
+  static final TextStyle inputText = _baseTextStyle.copyWith(
     fontSize: 16,
     fontWeight: FontWeight.w400,
     color: colorTextPrimary,
   );
 
-  static const TextStyle inputHint = TextStyle(
-    fontFamily: _font,
+  static final TextStyle inputHint = _baseTextStyle.copyWith(
     fontSize: 14,
     fontWeight: FontWeight.w400,
     color: colorTextHint,

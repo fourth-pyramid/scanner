@@ -38,7 +38,6 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      fontFamily: 'Tajwal',
       scaffoldBackgroundColor: colorBackground,
 
       // ─── AppBar ───
@@ -195,8 +194,8 @@ class AppTheme {
       ),
 
       // ─── List Tile ───
-      listTileTheme: const ListTileThemeData(
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      listTileTheme: ListTileThemeData(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
         iconColor: colorPrimary,
         titleTextStyle: AppTextStyles.bodyLarge,
         subtitleTextStyle: AppTextStyles.bodyMedium,

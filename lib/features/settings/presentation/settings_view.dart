@@ -70,14 +70,14 @@ class SettingsView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Center(
+                    Center(
                       child: Text(
                         'Configure Server',
                         style: AppTextStyles.titleLarge,
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Center(
+                    Center(
                       child: Text(
                         'Enter the server address to connect to the system',
                         style: AppTextStyles.bodyMedium,

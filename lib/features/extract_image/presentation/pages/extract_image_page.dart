@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/snack_bar.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import 'qr_camera_page.dart';
 import '../cubit/extract_image_cubit.dart';
 import '../cubit/extract_image_state.dart';
+import 'qr_camera_page.dart';
 
 class ExtractImagePage extends StatefulWidget {
   const ExtractImagePage({required this.categoryId, super.key, this.scanType});
@@ -147,20 +147,20 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
                       child: Image.file(previewFile, fit: BoxFit.contain),
                     ),
                   )
-                : const Column(
+                : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.add_photo_alternate_outlined,
                         size: 52,
                         color: colorTextHint,
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Text(
                         'No image selected',
                         style: AppTextStyles.bodyMedium,
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         'Tap "Open Camera" to capture a card',
                         style: AppTextStyles.bodySmall,

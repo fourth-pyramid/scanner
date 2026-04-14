@@ -33,10 +33,7 @@ class CardTypeView extends StatelessWidget {
         return Scaffold(
           backgroundColor: colorBackground,
           appBar: AppBar(
-            title: const Text(
-              'Select Card Type',
-              style: AppTextStyles.titleMedium,
-            ),
+            title: Text('Select Card Type', style: AppTextStyles.titleMedium),
             backgroundColor: colorSurface,
             foregroundColor: colorPrimary,
             centerTitle: true,

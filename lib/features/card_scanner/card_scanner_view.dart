@@ -66,9 +66,9 @@ class CardScannerView extends StatelessWidget {
           ),
 
           // ─── Section Title ───
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(24, 32, 24, 16),
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
               child: Text('Quick Actions', style: AppTextStyles.titleSmall),
             ),
           ),
@@ -105,9 +105,9 @@ class CardScannerView extends StatelessWidget {
           ),
 
           // ─── Danger Zone ───
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(24, 32, 24, 16),
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
               child: Text('Data Management', style: AppTextStyles.titleSmall),
             ),
           ),
@@ -222,7 +222,7 @@ class CardScannerView extends StatelessWidget {
                   style: AppTextStyles.titleSmall.copyWith(color: colorError),
                 ),
                 const SizedBox(height: 2),
-                const Text(
+                Text(
                   'Permanently delete all scan records',
                   style: AppTextStyles.bodySmall,
                 ),

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
-import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/custom_text_field.dart';
 import '../component/saved_data_card.dart';
 import 'cubit/saved_data_cubit.dart';
 import 'cubit/saved_data_state.dart';
@@ -18,7 +18,7 @@ class SavedDataView extends StatelessWidget {
     child: Scaffold(
       backgroundColor: colorBackground,
       appBar: AppBar(
-        title: const Text('Saved Scans', style: AppTextStyles.titleMedium),
+        title: Text('Saved Scans', style: AppTextStyles.titleMedium),
         backgroundColor: colorSurface,
         foregroundColor: colorPrimary,
         centerTitle: true,
