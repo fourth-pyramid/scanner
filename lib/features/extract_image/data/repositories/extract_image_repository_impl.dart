@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import 'package:dartz/dartz.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:image/image.dart' as img;
 
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
@@ -41,16 +40,17 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
           }
         }
 
-        final bytes = await finalImage.readAsBytes();
-        final originalImage = img.decodeImage(bytes);
-        if (originalImage == null) {
+        final dimensions = await ImageIsolateHelper.getImageDimensionsInIsolate(
+          imagePath: finalImage.path,
+        );
+        if (dimensions == null) {
           return const Left(
             ValidationFailure(message: 'Failed to decode image'),
           );
         }
 
-        final imgWidth = originalImage.width.toDouble();
-        final imgHeight = originalImage.height.toDouble();
+        final imgWidth = dimensions.width.toDouble();
+        final imgHeight = dimensions.height.toDouble();
 
         final fullScan = await textRecognizer.processImage(
           InputImage.fromFilePath(finalImage.path),
@@ -89,36 +89,39 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
         final pinCropBox = _addPadding(pinBox, imgWidth, imgHeight, 0.12);
         final serialCropBox = _addPadding(serialBox, imgWidth, imgHeight, 0.12);
 
-        final pinRegionImage = await _cropAndSave(
-          originalImage,
-          pinCropBox,
-          finalImage,
-          'pin',
+        final preparedAssets = await ImageIsolateHelper.prepareScanAssetsInIsolate(
+          imagePath: finalImage.path,
+          pinCropBox: _toScanCropBox(pinCropBox),
+          serialCropBox: _toScanCropBox(serialCropBox),
         );
-        final serialRegionImage = await _cropAndSave(
-          originalImage,
-          serialCropBox,
-          finalImage,
-          'serial',
-        );
+        if (preparedAssets == null) {
+          return const Left(
+            ValidationFailure(message: 'Failed to prepare scan image'),
+          );
+        }
+
+        final pinRegionImage = File(preparedAssets.pinBasePath);
+        final serialRegionImage = File(preparedAssets.serialBasePath);
 
         String? foundPin;
         String? foundSerial;
         var pinDetected = false;
         var serialDetected = false;
 
-        if (pinRegionImage != null && await pinRegionImage.exists()) {
+        if (await pinRegionImage.exists()) {
           foundPin = await _extractBestPin(
             textRecognizer: textRecognizer,
             baseImage: pinRegionImage,
+            variantPaths: preparedAssets.pinVariantPaths,
           );
           pinDetected = foundPin != null;
         }
 
-        if (serialRegionImage != null && await serialRegionImage.exists()) {
+        if (await serialRegionImage.exists()) {
           foundSerial = await _extractBestSerial(
             textRecognizer: textRecognizer,
             baseImage: serialRegionImage,
+            variantPaths: preparedAssets.serialVariantPaths,
           );
           serialDetected = foundSerial != null;
         }
@@ -222,12 +225,13 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
   Future<String?> _extractBestPin({
     required TextRecognizer textRecognizer,
     required File baseImage,
+    required List<String> variantPaths,
   }) async {
     final candidates = <String>[];
-    final variantFiles = await _createOcrVariants(baseImage, 'pin_variant');
+    final variantFiles = variantPaths.map(File.new).toList();
 
     try {
-      for (final file in variantFiles) {
+      for (final file in [baseImage, ...variantFiles]) {
         if (!await file.exists()) continue;
 
         final text = await _recognizeText(textRecognizer, file);
@@ -253,12 +257,13 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
   Future<String?> _extractBestSerial({
     required TextRecognizer textRecognizer,
     required File baseImage,
+    required List<String> variantPaths,
   }) async {
     final candidates = <String>[];
-    final variantFiles = await _createOcrVariants(baseImage, 'serial_variant');
+    final variantFiles = variantPaths.map(File.new).toList();
 
     try {
-      for (final file in variantFiles) {
+      for (final file in [baseImage, ...variantFiles]) {
         if (!await file.exists()) continue;
 
         final text = await _recognizeText(textRecognizer, file);
@@ -286,63 +291,6 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
       InputImage.fromFilePath(image.path),
     );
     return recognized.text.trim();
-  }
-
-  Future<List<File>> _createOcrVariants(File sourceImage, String label) async {
-    final variants = <File>[sourceImage];
-
-    try {
-      final bytes = await sourceImage.readAsBytes();
-      final image = img.decodeImage(bytes);
-      if (image == null) return variants;
-
-      final processedVariants = <img.Image>[
-        _prepareVariant(image, contrast: 1.7, brightness: 1.05),
-        _prepareVariant(image, contrast: 2.1, brightness: 1.12, threshold: 145),
-        _prepareVariant(image, contrast: 2.4, brightness: 1.18, threshold: 120),
-        _prepareVariant(image, contrast: 1.9, brightness: 1.08, threshold: 165),
-      ];
-
-      for (var i = 0; i < processedVariants.length; i++) {
-        final outPath =
-            '${sourceImage.parent.path}/${label}_${i}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final outFile = File(outPath);
-        await outFile.writeAsBytes(
-          img.encodeJpg(processedVariants[i]),
-        );
-        variants.add(outFile);
-      }
-    } catch (_) {
-      return variants;
-    }
-
-    return variants;
-  }
-
-  img.Image _prepareVariant(
-    img.Image source, {
-    required double contrast,
-    required double brightness,
-    int? threshold,
-  }) {
-    var processed = img.copyResize(
-      source,
-      width: (source.width * 2).clamp(1200, 2400),
-      interpolation: img.Interpolation.cubic,
-    );
-    processed = img.grayscale(processed);
-    processed = img.adjustColor(
-      processed,
-      contrast: contrast,
-      brightness: brightness,
-    );
-    processed = img.gaussianBlur(processed, radius: 1);
-
-    if (threshold != null) {
-      processed = _binarizeImage(processed, threshold: threshold);
-    }
-
-    return processed;
   }
 
   String? _pickBestCandidate(
@@ -461,6 +409,13 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
     }
   }
 
+  ScanCropBox _toScanCropBox(Rect rect) => ScanCropBox(
+    left: rect.left.toInt(),
+    top: rect.top.toInt(),
+    width: rect.width.toInt(),
+    height: rect.height.toInt(),
+  );
+
   Future<void> _deleteIfTemp(File file) async {
     try {
       if (await file.exists()) {
@@ -493,49 +448,4 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
     );
   }
 
-  Future<File?> _cropAndSave(
-    img.Image source,
-    Rect cropBox,
-    File originalFile,
-    String label,
-  ) async {
-    try {
-      var cropped = img.copyCrop(
-        source,
-        x: cropBox.left.toInt(),
-        y: cropBox.top.toInt(),
-        width: cropBox.width.toInt(),
-        height: cropBox.height.toInt(),
-      );
-
-      cropped = img.copyResize(
-        cropped,
-        width: (cropped.width * 2).clamp(1000, 2400),
-        interpolation: img.Interpolation.cubic,
-      );
-      cropped = img.grayscale(cropped);
-      cropped = img.adjustColor(cropped, contrast: 1.8, brightness: 1.08);
-
-      final outPath =
-          '${originalFile.parent.path}/${label}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final outFile = File(outPath);
-      await outFile.writeAsBytes(img.encodeJpg(cropped));
-      return outFile;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  img.Image _binarizeImage(img.Image source, {required int threshold}) {
-    final result = img.Image(width: source.width, height: source.height);
-    for (var y = 0; y < source.height; y++) {
-      for (var x = 0; x < source.width; x++) {
-        final pixel = source.getPixel(x, y);
-        final luminance = pixel.luminance;
-        final value = luminance < threshold ? 0 : 255;
-        result.setPixel(x, y, img.ColorRgb8(value, value, value));
-      }
-    }
-    return result;
-  }
 }
