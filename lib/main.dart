@@ -4,21 +4,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-import 'package:qrscanner/constant.dart';
-import 'package:qrscanner/core/appStorage/app_storage.dart';
-import 'package:qrscanner/core/dioHelper/dio_helper.dart';
-import 'package:qrscanner/core/router/router.dart';
-import 'package:qrscanner/features/settings/settings_view.dart';
-import 'package:qrscanner/features/app_disabled_view.dart';
-import 'package:qrscanner/firebase_options.dart';
+import 'core/appStorage/app_storage.dart';
+import 'core/dioHelper/dio_helper.dart';
+import 'core/router/router.dart';
+import 'features/app_disabled_view.dart';
+import 'features/settings/settings_view.dart';
+import 'firebase_options.dart';
+import 'injection_container.dart';
+import 'theme/app_theme.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-  }
+  HttpClient createHttpClient(SecurityContext? context) =>
+      super.createHttpClient(context)
+        ..badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
 }
 
 void main() async {
@@ -36,6 +36,7 @@ void main() async {
 
   try {
     await AppStorage.init();
+    await initDependencies();
     DioHelper.initBaseUrl();
 
     runApp(const MyApp());
@@ -47,63 +48,64 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // Safe optimization: Cache theme data to avoid rebuilding on every render
-  static final ThemeData _appTheme = ThemeData(
-    fontFamily: 'Tajwal',
-    primaryColor: colorPrimary,
-  );
-
   @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('app_control')
-          .doc('status')
-          .snapshots(),
-      builder: (context, snapshot) {
-        // حالة الانتظار للبيانات
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const MaterialApp(
-            home: Scaffold(body: Center(child: CircularProgressIndicator())),
-            debugShowCheckedModeBanner: false,
-          );
-        }
+  Widget build(BuildContext context) => StreamBuilder<DocumentSnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('app_control')
+        .doc('status')
+        .snapshots(),
+    builder: (context, snapshot) {
+      // Wait state
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return MaterialApp(
+          home: const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          ),
+          debugShowCheckedModeBanner: false,
+          // Apply new theme right away
+          theme: AppTheme.lightTheme,
+        );
+      }
 
-        // حالة وجود خطأ
-        if (snapshot.hasError) {
-          return const MaterialApp(
-            home: Scaffold(
-              body: Center(
+      // Error state
+      if (snapshot.hasError) {
+        return MaterialApp(
+          home: const Scaffold(
+            body: Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
                 child: Text(
-                  'حدث خطأ أثناء الاتصال بالخادم.',
+                  'Error connecting to server.',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
               ),
             ),
-            debugShowCheckedModeBanner: false,
-          );
-        }
-
-        // حالة البيانات موجودة
-        final bool isAppEnabled = snapshot.data?.get('enabled') ?? false;
-
-        if (!isAppEnabled) {
-          return const MaterialApp(
-            home: AppDisabledView(),
-            debugShowCheckedModeBanner: false,
-          );
-        }
-
-        // التطبيق يعمل
-        return MaterialApp(
-          home: const SettingsView(),
-          onGenerateRoute: onGenerateRoute,
+          ),
           debugShowCheckedModeBanner: false,
-          navigatorKey: navigatorKey,
-          theme: _appTheme, // Use cached theme
+          theme: AppTheme.lightTheme,
         );
-      },
-    );
-  }
+      }
+
+      // Data available state
+      final bool isAppEnabled = snapshot.data?.get('enabled') ?? false;
+
+      if (!isAppEnabled) {
+        return MaterialApp(
+          home: const AppDisabledView(),
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+        );
+      }
+
+      // App enabled
+      return MaterialApp(
+        home: const SettingsView(),
+        onGenerateRoute: onGenerateRoute,
+        debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
+        theme: AppTheme.lightTheme, // Inject the new design system
+      );
+    },
+  );
 }

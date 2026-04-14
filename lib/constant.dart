@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-Color colorPrimary = const Color.fromRGBO(31, 43, 70, 1);
-Color colorSelectedBN = const Color(0xFF36BFC6);
-Color colorSecondary = const Color.fromRGBO(233, 239, 255, 1);
+import 'theme/app_colors.dart' as theme;
 
-Color colorLightGrey = const Color(0xFF707070);
+/// ─── Legacy Bridge ───
+/// This file maintains aliases to the new design system in lib/theme/
+/// to ensure backward compatibility with existing code.
 
-BoxDecoration containerDecoration = const BoxDecoration(
-  gradient: LinearGradient(
-    colors: [Color.fromRGBO(31, 43, 70, 1), Color.fromRGBO(134, 159, 216, 1)],
-  ),
-);
+Color get colorPrimary => theme.colorPrimary;
+Color get colorSelectedBN => theme.colorAccent;
+Color get colorSecondary => const Color.fromRGBO(233, 239, 255, 1);
+Color get colorLightGrey => const Color(0xFF707070);
+
+BoxDecoration get containerDecoration => theme.containerDecoration;

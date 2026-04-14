@@ -10,12 +10,10 @@ class CardCameraPage extends StatefulWidget {
   const CardCameraPage({super.key});
 
   // دالة ثابتة لفتح الكاميرا
-  static Future<XFile?> capture(BuildContext context) {
-    return Navigator.of(
-      context,
-      rootNavigator: true,
-    ).push<XFile?>(MaterialPageRoute(builder: (_) => const CardCameraPage()));
-  }
+  static Future<XFile?> capture(BuildContext context) => Navigator.of(
+    context,
+    rootNavigator: true,
+  ).push<XFile?>(MaterialPageRoute(builder: (_) => const CardCameraPage()));
 
   @override
   State<CardCameraPage> createState() => _CardCameraPageState();
@@ -35,9 +33,19 @@ class _CardCameraPageState extends State<CardCameraPage> {
 
   Future<void> _setupCamera() async {
     try {
-      // طلب إذن الكاميرا
-      final status = await Permission.camera.request();
-      if (!status.isGranted) {
+      // طلب إذن الكاميرا - مع معالجة الأخطاء
+      bool permissionGranted = false;
+      try {
+        final status = await Permission.camera.request();
+        permissionGranted = status.isGranted;
+      } catch (e) {
+        // في حالة فشل permission_handler، نفترض الإذن ممنوح على الويندوز
+        debugPrint('Permission handler error: $e');
+        permissionGranted =
+            true; // Allow on Windows where permission_handler may fail
+      }
+
+      if (!permissionGranted) {
         setState(() {
           _error = 'يرجى السماح باستخدام الكاميرا';
           _isLoading = false;
@@ -71,16 +79,25 @@ class _CardCameraPageState extends State<CardCameraPage> {
 
       debugPrint('Using camera: ${camera.name}');
 
-      // إعداد Controller بأعلى جودة ممكنة
-      final controller = CameraController(
-        camera,
-        ResolutionPreset.ultraHigh,
-        enableAudio: false,
-        imageFormatGroup: ImageFormatGroup.jpeg,
-      );
-
-      debugPrint('Initializing camera...');
-      await controller.initialize();
+      // إعداد Controller بأعلى جودة ممكنة مع fallback آمن
+      CameraController controller;
+      try {
+        controller = CameraController(
+          camera,
+          ResolutionPreset.max,
+          enableAudio: false,
+          imageFormatGroup: ImageFormatGroup.jpeg,
+        );
+        await controller.initialize();
+      } catch (_) {
+        controller = CameraController(
+          camera,
+          ResolutionPreset.ultraHigh,
+          enableAudio: false,
+          imageFormatGroup: ImageFormatGroup.jpeg,
+        );
+        await controller.initialize();
+      }
 
       debugPrint('Setting camera modes...');
       // تفعيل التركيز التلقائي المستمر لأفضل وضوح
@@ -166,7 +183,7 @@ class _CardCameraPageState extends State<CardCameraPage> {
 
       // استخدام أصغر بعد لضمان المربع
       final minDimension = imageWidth < imageHeight ? imageWidth : imageHeight;
-      final cropSize = (minDimension * 0.85).toInt();
+      final cropSize = (minDimension * 0.92).toInt();
 
       // مركز الصورة
       final cropX = (imageWidth - cropSize) ~/ 2;
@@ -184,7 +201,7 @@ class _CardCameraPageState extends State<CardCameraPage> {
       // تحسين جودة الصورة
       croppedImage = _enhanceImage(croppedImage);
 
-      // حفظ الصورة المحسنة بأعلى جودة (100%)
+      // img.encodeJpg يستخدم جودة 100% افتراضيا
       final croppedBytes = img.encodeJpg(croppedImage);
       await imageFile.writeAsBytes(croppedBytes);
 
@@ -209,52 +226,15 @@ class _CardCameraPageState extends State<CardCameraPage> {
 
   // دالة لتحسين جودة الصورة
   img.Image _enhanceImage(img.Image image) {
-    // تحويل إلى تدرج الرمادي لتبسيط الصورة للـ OCR
-    image = img.grayscale(image);
-
-    // تعزيز التباين والسطوع للحصول على أرقام أوضح
-    image = img.adjustColor(
+    // تعزيز بسيط فقط بدون threshold قوي حتى لا نفقد تفاصيل السيريال أسفل الكارت
+    final enhanced = img.adjustColor(
       image,
-      contrast: 5, // رفع التباين بشكل ملحوظ
-      brightness: 0.8, // تفتيح طفيف
+      contrast: 1.25,
+      brightness: 1.05,
+      saturation: 1.05,
     );
 
-    // تقليل الضوضاء الطفيفة دون فقدان الحواف
-    // image = img.gaussianBlur(image, radius: 1);
-
-    // تطبيق عتبة ثنائية أدابتيف بسيطة: نحسب الحد بين أدنى وأعلى قيمة
-    try {
-      final width = image.width;
-      final height = image.height;
-
-      int minLum = 255;
-      int maxLum = 0;
-
-      for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-          final p = image.getPixel(x, y);
-          final lum = img.getLuminance(p).toInt();
-          if (lum < minLum) minLum = lum;
-          if (lum > maxLum) maxLum = lum;
-        }
-      }
-
-      final threshold = ((minLum + maxLum) ~/ 2).clamp(0, 255);
-
-      for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-          final p = image.getPixel(x, y);
-          final lum = img.getLuminance(p).toInt();
-          final v = lum >= threshold ? 255 : 0;
-          image.setPixelRgba(x, y, v, v, v, 255);
-        }
-      }
-    } catch (e) {
-      // إذا فشل أي شيء، نرجع الصورة المحسنة جزئياً بدلاً من الفشل الكامل
-      debugPrint('Warning during adaptive thresholding: $e');
-    }
-
-    return image;
+    return img.contrast(enhanced, contrast: 130);
   }
 
   Future<void> _setFocusPoint(Offset point) async {
@@ -451,9 +431,8 @@ class _CardFrameOverlay extends StatelessWidget {
   const _CardFrameOverlay();
 
   @override
-  Widget build(BuildContext context) {
-    return CustomPaint(painter: _CardFramePainter());
-  }
+  Widget build(BuildContext context) =>
+      CustomPaint(painter: _CardFramePainter());
 }
 
 class _CardFramePainter extends CustomPainter {
@@ -506,52 +485,50 @@ class _CardFramePainter extends CustomPainter {
     const cornerLength = 35.0;
 
     // الزاوية العلوية اليسرى
-    canvas.drawLine(
-      Offset(left, top + 20),
-      Offset(left, top + 20 + cornerLength),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      Offset(left + 20, top),
-      Offset(left + 20 + cornerLength, top),
-      cornerPaint,
-    );
-
-    // الزاوية العلوية اليمنى
-    canvas.drawLine(
-      Offset(left + squareSize, top + 20),
-      Offset(left + squareSize, top + 20 + cornerLength),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      Offset(left + squareSize - 20, top),
-      Offset(left + squareSize - 20 - cornerLength, top),
-      cornerPaint,
-    );
-
-    // الزاوية السفلية اليسرى
-    canvas.drawLine(
-      Offset(left, top + squareSize - 20),
-      Offset(left, top + squareSize - 20 - cornerLength),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      Offset(left + 20, top + squareSize),
-      Offset(left + 20 + cornerLength, top + squareSize),
-      cornerPaint,
-    );
-
-    // الزاوية السفلية اليمنى
-    canvas.drawLine(
-      Offset(left + squareSize, top + squareSize - 20),
-      Offset(left + squareSize, top + squareSize - 20 - cornerLength),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      Offset(left + squareSize - 20, top + squareSize),
-      Offset(left + squareSize - 20 - cornerLength, top + squareSize),
-      cornerPaint,
-    );
+    canvas
+      ..drawLine(
+        Offset(left, top + 20),
+        Offset(left, top + 20 + cornerLength),
+        cornerPaint,
+      )
+      ..drawLine(
+        Offset(left + 20, top),
+        Offset(left + 20 + cornerLength, top),
+        cornerPaint,
+      )
+      // الزاوية العلوية اليمنى
+      ..drawLine(
+        Offset(left + squareSize, top + 20),
+        Offset(left + squareSize, top + 20 + cornerLength),
+        cornerPaint,
+      )
+      ..drawLine(
+        Offset(left + squareSize - 20, top),
+        Offset(left + squareSize - 20 - cornerLength, top),
+        cornerPaint,
+      )
+      // الزاوية السفلية اليسرى
+      ..drawLine(
+        Offset(left, top + squareSize - 20),
+        Offset(left, top + squareSize - 20 - cornerLength),
+        cornerPaint,
+      )
+      ..drawLine(
+        Offset(left + 20, top + squareSize),
+        Offset(left + 20 + cornerLength, top + squareSize),
+        cornerPaint,
+      )
+      // الزاوية السفلية اليمنى
+      ..drawLine(
+        Offset(left + squareSize, top + squareSize - 20),
+        Offset(left + squareSize, top + squareSize - 20 - cornerLength),
+        cornerPaint,
+      )
+      ..drawLine(
+        Offset(left + squareSize - 20, top + squareSize),
+        Offset(left + squareSize - 20 - cornerLength, top + squareSize),
+        cornerPaint,
+      );
   }
 
   @override

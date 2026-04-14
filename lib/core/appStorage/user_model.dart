@@ -1,8 +1,4 @@
 class UserModel {
-  int? status;
-  String? massage;
-  Data? data;
-
   UserModel({this.status, this.massage, this.data});
 
   UserModel.fromJson(Map<String, dynamic> json) {
@@ -10,6 +6,9 @@ class UserModel {
     massage = json['massage'];
     data = json['data'] != null ? Data.fromJson(json['data']) : null;
   }
+  int? status;
+  String? massage;
+  Data? data;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -23,15 +22,14 @@ class UserModel {
 }
 
 class Data {
-  String? token;
-  User? user;
-
   Data({this.token, this.user});
 
   Data.fromJson(Map<String, dynamic> json) {
     token = json['token'];
     user = json['user'] != null ? User.fromJson(json['user']) : null;
   }
+  String? token;
+  User? user;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -44,17 +42,6 @@ class Data {
 }
 
 class User {
-  int? id;
-  String? name;
-  String? email;
-  String? role;
-  String? emailVerifiedAt;
-  String? createdAt;
-  String? updatedAt;
-  String? active;
-  String? width;
-  String? hight;
-
   User({
     this.id,
     this.name,
@@ -80,6 +67,16 @@ class User {
     width = json['width'];
     hight = json['hight'];
   }
+  int? id;
+  String? name;
+  String? email;
+  String? role;
+  String? emailVerifiedAt;
+  String? createdAt;
+  String? updatedAt;
+  String? active;
+  String? width;
+  String? hight;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};

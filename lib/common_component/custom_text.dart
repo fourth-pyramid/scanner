@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_text_styles.dart';
+
 @immutable
 class CustomText extends StatelessWidget {
   const CustomText({
     super.key,
     this.text = '',
-    this.fontSize = 20,
-    this.color = const Color(0xFF162C47),
+    this.fontSize,
+    this.color,
     this.alignment,
     this.fontWeight,
     this.verticalMargin = 0,
@@ -15,12 +17,13 @@ class CustomText extends StatelessWidget {
     this.decoration,
     this.fontFamily,
     this.maxLines,
+    this.style,
   });
 
   final String text;
-  final double fontSize;
+  final double? fontSize;
   final String? fontFamily;
-  final Color color;
+  final Color? color;
   final Alignment? alignment;
   final FontWeight? fontWeight;
   final double verticalMargin;
@@ -28,9 +31,21 @@ class CustomText extends StatelessWidget {
   final int? maxLines;
   final TextAlign? textAlign;
   final TextDecoration? decoration;
+  final TextStyle? style;
 
   @override
   Widget build(BuildContext context) {
+    // Default to bodyLarge if no style or specific props are provided
+    final baseStyle = style ?? AppTextStyles.bodyLarge;
+
+    final finalStyle = baseStyle.copyWith(
+      color: color,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      decoration: decoration,
+      fontFamily: fontFamily,
+    );
+
     return Container(
       margin: EdgeInsets.symmetric(
         vertical: verticalMargin,
@@ -40,12 +55,7 @@ class CustomText extends StatelessWidget {
       child: Text(
         text,
         maxLines: maxLines,
-        style: TextStyle(
-          decoration: decoration,
-          fontSize: fontSize,
-          color: color,
-          fontWeight: fontWeight,
-        ),
+        style: finalStyle,
         textAlign: textAlign,
       ),
     );

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:qrscanner/constant.dart';
+
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 
 class CustomTextField extends StatefulWidget {
   const CustomTextField({
@@ -16,10 +18,11 @@ class CustomTextField extends StatefulWidget {
     this.maxLength,
     this.prefixIcon,
     this.suffixIcon,
-    this.fillColor = Colors.white,
+    this.fillColor = colorSurface,
     this.textColor,
-    this.radius = 10,
+    this.radius = 12,
     this.height = 16,
+    this.keyboardType,
   });
 
   final String? hint;
@@ -41,6 +44,7 @@ class CustomTextField extends StatefulWidget {
   final Color? textColor;
   final double radius;
   final double height;
+  final TextInputType? keyboardType;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -56,51 +60,65 @@ class _CustomTextFieldState extends State<CustomTextField> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.controller,
-      readOnly: widget.isReadOnly,
-      obscureText: _obscure,
-      maxLines: widget.maxLines,
-      maxLength: widget.maxLength,
-      onChanged: widget.onChanged,
-      onTap: widget.onTap,
-      onTapOutside: (_) => FocusScope.of(context).unfocus(),
-      cursorColor: colorPrimary,
-      style: TextStyle(color: widget.textColor, fontSize: 20),
-      validator: widget.validator,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: widget.fillColor,
-        hintText: widget.hint,
-        labelText: widget.labelText,
-        prefixIcon: widget.prefixIcon,
-        suffixIcon: widget.secure
-            ? IconButton(
-                iconSize: 18,
-                icon: Icon(
-                  _obscure ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.grey,
-                ),
-                onPressed: () => setState(() => _obscure = !_obscure),
-              )
-            : widget.suffixIcon,
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: widget.height,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(widget.radius),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(widget.radius),
-          borderSide: BorderSide(color: colorLightGrey),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(widget.radius),
-          borderSide: const BorderSide(color: Colors.green),
-        ),
+  Widget build(BuildContext context) => TextFormField(
+    controller: widget.controller,
+    readOnly: widget.isReadOnly,
+    obscureText: _obscure,
+    keyboardType: widget.keyboardType,
+    maxLines: widget.secure ? 1 : widget.maxLines,
+    maxLength: widget.maxLength,
+    onChanged: widget.onChanged,
+    onTap: widget.onTap,
+    onTapOutside: (_) => FocusScope.of(context).unfocus(),
+    cursorColor: colorPrimary,
+    style: AppTextStyles.inputText.copyWith(
+      color: widget.textColor ?? colorTextPrimary,
+    ),
+    validator: widget.validator,
+    decoration: InputDecoration(
+      filled: true,
+      fillColor: widget.fillColor,
+      hintText: widget.hint,
+      hintStyle: AppTextStyles.inputHint,
+      labelText: widget.labelText,
+      prefixIcon: widget.prefixIcon,
+      suffixIcon: widget.secure
+          ? IconButton(
+              iconSize: 20,
+              icon: Icon(
+                _obscure
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                color: colorTextSecondary,
+              ),
+              onPressed: () => setState(() => _obscure = !_obscure),
+            )
+          : widget.suffixIcon,
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: widget.height,
       ),
-    );
-  }
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(widget.radius),
+        borderSide: const BorderSide(color: colorBorder),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(widget.radius),
+        borderSide: const BorderSide(color: colorBorder, width: 1.2),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(widget.radius),
+        borderSide: const BorderSide(color: colorPrimary, width: 1.8),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(widget.radius),
+        borderSide: const BorderSide(color: colorError, width: 1.2),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(widget.radius),
+        borderSide: const BorderSide(color: colorError, width: 1.8),
+      ),
+      errorStyle: AppTextStyles.bodySmall.copyWith(color: colorError),
+    ),
+  );
 }

@@ -1,9 +1,10 @@
 // ignore_for_file: avoid_classes_with_only_static_members
 
 import 'package:get_storage/get_storage.dart';
-import 'package:qrscanner/core/appStorage/user_model.dart';
-import 'package:qrscanner/core/router/router.dart';
-import 'package:qrscanner/features/login/login_view.dart';
+
+import '../../features/login/login_view.dart';
+import '../router/router.dart';
+import 'user_model.dart';
 
 abstract class AppStorage {
   static final GetStorage _box = GetStorage();
@@ -35,9 +36,7 @@ abstract class AppStorage {
     return profileModel;
   }
 
-  static bool get isLogged {
-    return getUserInfo != null;
-  }
+  static bool get isLogged => getUserInfo != null;
 
   static Future<void> cacheUserInfo(UserModel userModel) async {
     await _box.write('user', userModel.toJson());
@@ -48,9 +47,7 @@ abstract class AppStorage {
     await _box.write('image', imagePath);
   }
 
-  static String? get getImagePath {
-    return _box.read('image');
-  }
+  static String? get getImagePath => _box.read('image');
 
   static int? get getUserId => getUserInfo?.data?.user!.id;
 
@@ -63,9 +60,7 @@ abstract class AppStorage {
     await _box.write('baseUrl', baseUrl);
   }
 
-  static String? get getBaseUrl {
-    return _box.read('baseUrl');
-  }
+  static String? get getBaseUrl => _box.read('baseUrl');
 
   static bool get hasBaseUrl => _box.hasData('baseUrl');
 

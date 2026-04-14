@@ -1,8 +1,4 @@
 class GetCategoriesModel {
-  int? status;
-  String? massage;
-  List<CategoryData>? data;
-
   GetCategoriesModel({this.status, this.massage, this.data});
 
   GetCategoriesModel.fromJson(Map<String, dynamic> json) {
@@ -10,11 +6,14 @@ class GetCategoriesModel {
     massage = json['massage'];
     if (json['data'] != null) {
       data = <CategoryData>[];
-      json['data'].forEach((v) {
+      for (var v in (json['data'] as List)) {
         data!.add(CategoryData.fromJson(v));
-      });
+      }
     }
   }
+  int? status;
+  String? massage;
+  List<CategoryData>? data;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -28,12 +27,6 @@ class GetCategoriesModel {
 }
 
 class CategoryData {
-  int? id;
-  String? name;
-  String? image;
-  String? createdAt;
-  String? updatedAt;
-
   CategoryData({
     this.id,
     this.name,
@@ -49,6 +42,11 @@ class CategoryData {
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
   }
+  int? id;
+  String? name;
+  String? image;
+  String? createdAt;
+  String? updatedAt;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};

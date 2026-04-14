@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:qrscanner/constant.dart';
+
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 
 class CustomTextButton extends StatelessWidget {
   const CustomTextButton({
@@ -19,21 +21,22 @@ class CustomTextButton extends StatelessWidget {
   final TextDecoration? textDecoration;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: alignment,
-      child: TextButton(
-        onPressed: onPressed,
-        child: Text(
-          text,
-          style: TextStyle(
-            decoration: TextDecoration.underline,
-            color: colorPrimary,
-            fontSize: 14,
-            fontWeight: fontWeight,
-          ),
+  Widget build(BuildContext context) => Container(
+    alignment: alignment,
+    child: TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: Text(
+        text,
+        style: AppTextStyles.labelMedium.copyWith(
+          decoration: textDecoration ?? TextDecoration.underline,
+          color: color ?? colorPrimary,
+          fontWeight: fontWeight ?? FontWeight.w600,
         ),
       ),
-    );
-  }
+    ),
+  );
 }

@@ -12,12 +12,10 @@ import 'package:permission_handler/permission_handler.dart';
 class QrCameraPage extends StatefulWidget {
   const QrCameraPage({super.key});
 
-  static Future<XFile?> capture(BuildContext context) {
-    return Navigator.of(
-      context,
-      rootNavigator: true,
-    ).push<XFile?>(MaterialPageRoute(builder: (_) => const QrCameraPage()));
-  }
+  static Future<XFile?> capture(BuildContext context) => Navigator.of(
+    context,
+    rootNavigator: true,
+  ).push<XFile?>(MaterialPageRoute(builder: (_) => const QrCameraPage()));
 
   @override
   State<QrCameraPage> createState() => _QrCameraPageState();
@@ -26,9 +24,9 @@ class QrCameraPage extends StatefulWidget {
 class _QrCameraPageState extends State<QrCameraPage> {
   CameraController? _controller;
   bool _isLoading = true;
-  String? _error;
-  bool _isFlashOn = false;
   bool _isProcessing = false;
+  bool _isFlashOn = false;
+  String? _error;
 
   final GlobalKey _previewContainerKey = GlobalKey();
 
@@ -43,7 +41,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
       final status = await Permission.camera.request();
       if (!status.isGranted) {
         setState(() {
-          _error = 'يرجى السماح باستخدام الكاميرا';
+          _error = 'Camera permission is required.';
           _isLoading = false;
         });
         return;
@@ -52,7 +50,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         setState(() {
-          _error = 'لا توجد كاميرا متاحة';
+          _error = 'No camera available.';
           _isLoading = false;
         });
         return;
@@ -69,9 +67,21 @@ class _QrCameraPageState extends State<QrCameraPage> {
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.jpeg,
       );
-      await controller.initialize();
 
-      if (!mounted) return;
+      await controller.initialize();
+      await controller.setFocusMode(FocusMode.auto);
+      await controller.setExposureMode(ExposureMode.auto);
+
+      try {
+        await controller.lockCaptureOrientation();
+      } catch (_) {
+        // Some devices do not support capture orientation lock.
+      }
+
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
 
       setState(() {
         _controller = controller;
@@ -79,8 +89,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
       });
     } catch (e) {
       setState(() {
-        debugPrint(e.toString());
-        _error = 'خطأ في تشغيل الكاميرا: $e';
+        _error = 'Failed to start camera: $e';
         _isLoading = false;
       });
     }
@@ -99,13 +108,26 @@ class _QrCameraPageState extends State<QrCameraPage> {
     try {
       _isFlashOn = !_isFlashOn;
       setState(() {});
-
       await controller.setFlashMode(
         _isFlashOn ? FlashMode.torch : FlashMode.off,
       );
-    } catch (e) {
+    } catch (_) {
       _isFlashOn = false;
       setState(() {});
+    }
+  }
+
+  Future<void> _setFocusPoint(Offset point) async {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+
+    try {
+      await controller.setFocusPoint(point);
+      await controller.setExposurePoint(point);
+      await controller.setFocusMode(FocusMode.auto);
+      await controller.setExposureMode(ExposureMode.auto);
+    } catch (_) {
+      // Supported on some devices only.
     }
   }
 
@@ -119,15 +141,13 @@ class _QrCameraPageState extends State<QrCameraPage> {
     setState(() {});
 
     try {
-      final XFile imageFile = await controller.takePicture();
-
-      final File sourceFile = File(imageFile.path);
+      final imageFile = await controller.takePicture();
+      final sourceFile = File(imageFile.path);
       final imageBytes = await sourceFile.readAsBytes();
 
       final previewBox =
           _previewContainerKey.currentContext?.findRenderObject() as RenderBox?;
 
-      // نمرر كل البيانات إلى compute لعزل المعالجة
       final processed = await compute(_processImage, {
         'imageBytes': imageBytes,
         'previewWidth': previewBox?.size.width,
@@ -142,10 +162,12 @@ class _QrCameraPageState extends State<QrCameraPage> {
       final savePath =
           '${dir.path}/qr_card_${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-      await File(savePath).writeAsBytes(processed);
+      await File(savePath).writeAsBytes(processed, flush: true);
 
-      if (mounted) Navigator.of(context).pop(XFile(savePath));
-    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(XFile(savePath));
+      }
+    } catch (_) {
       _isProcessing = false;
       setState(() {});
     }
@@ -164,10 +186,13 @@ class _QrCameraPageState extends State<QrCameraPage> {
       return Scaffold(
         backgroundColor: Colors.black,
         body: Center(
-          child: Text(
-            _error!,
-            style: const TextStyle(color: Colors.white),
-            textAlign: TextAlign.center,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              _error!,
+              style: const TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       );
@@ -190,17 +215,31 @@ class _QrCameraPageState extends State<QrCameraPage> {
             child: Center(
               child: AspectRatio(
                 aspectRatio: 1 / controller.value.aspectRatio,
-                child: Container(
-                  key: _previewContainerKey,
-                  color: Colors.black,
-                  child: CameraPreview(controller),
+                child: GestureDetector(
+                  onTapUp: (details) {
+                    final box =
+                        _previewContainerKey.currentContext?.findRenderObject()
+                            as RenderBox?;
+                    if (box == null) return;
+
+                    final localOffset =
+                        box.globalToLocal(details.globalPosition);
+                    final focusPoint = Offset(
+                      (localOffset.dx / box.size.width).clamp(0.0, 1.0),
+                      (localOffset.dy / box.size.height).clamp(0.0, 1.0),
+                    );
+                    _setFocusPoint(focusPoint);
+                  },
+                  child: Container(
+                    key: _previewContainerKey,
+                    color: Colors.black,
+                    child: CameraPreview(controller),
+                  ),
                 ),
               ),
             ),
           ),
-
           const Positioned.fill(child: _CardFrameOverlay()),
-
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             right: 16,
@@ -209,7 +248,6 @@ class _QrCameraPageState extends State<QrCameraPage> {
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),
-
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             left: 16,
@@ -222,7 +260,6 @@ class _QrCameraPageState extends State<QrCameraPage> {
               onPressed: _toggleFlash,
             ),
           ),
-
           Positioned(
             top: MediaQuery.of(context).padding.top + 70,
             left: 0,
@@ -230,7 +267,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
             child: Column(
               children: [
                 const Text(
-                  'ضع الكارت داخل المربع',
+                  'Place the card inside the frame',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -239,13 +276,14 @@ class _QrCameraPageState extends State<QrCameraPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _isFlashOn ? 'الفلاش مفعل' : 'استخدم الفلاش للإضاءة',
+                  _isFlashOn
+                      ? 'Flash is on'
+                      : 'Tap the preview to focus before capture',
                   style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
             ),
           ),
-
           Positioned(
             bottom: 40,
             left: 0,
@@ -290,72 +328,99 @@ List<int> _processImage(Map data) {
   final Uint8List bytes = raw is Uint8List
       ? raw
       : Uint8List.fromList(raw as List<int>);
-  img.Image? image = img.decodeImage(bytes);
+  final image = img.decodeImage(bytes);
 
   if (image == null) return bytes;
 
-  // تصغير الصورة للنصف — بدون تأثير بصري
-  image = img.copyResize(image, width: image.width ~/ 2);
+  final previewW = data['previewWidth'] as double?;
+  final previewH = data['previewHeight'] as double?;
+  final dx = data['previewDx'] as double?;
+  final dy = data['previewDy'] as double?;
+  final screenW = data['screenWidth'] as double?;
+  final screenH = data['screenHeight'] as double?;
 
-  final previewW = data['previewWidth'];
-  final previewH = data['previewHeight'];
-  final dx = data['previewDx'];
-  final dy = data['previewDy'];
-  final screenW = data['screenWidth'];
-  final screenH = data['screenHeight'];
+  img.Image cropped;
 
-  // fallback لو مفيش preview
-  if (previewW == null || previewH == null) {
+  if (previewW == null ||
+      previewH == null ||
+      dx == null ||
+      dy == null ||
+      screenW == null ||
+      screenH == null) {
     final size =
-        (image.width < image.height ? image.width : image.height) * 0.7;
-    final crop = img.copyCrop(
+        (image.width < image.height ? image.width : image.height) * 0.82;
+    cropped = img.copyCrop(
       image,
-      x: ((image.width - size) / 2).toInt(),
-      y: ((image.height - size) / 2).toInt(),
-      width: size.toInt(),
-      height: size.toInt(),
+      x: ((image.width - size) / 2).round(),
+      y: ((image.height - size) / 2).round(),
+      width: size.round(),
+      height: size.round(),
     );
-    return img.encodeJpg(crop, quality: 85);
+  } else {
+    final overlaySize = screenW * 0.70;
+    final left = (screenW - overlaySize) / 2;
+    final top = (screenH - overlaySize) / 2;
+
+    final relLeft = left - dx;
+    final relTop = top - dy;
+
+    final scaleX = image.width / previewW;
+    final scaleY = image.height / previewH;
+
+    var cropX = (relLeft * scaleX).round();
+    var cropY = (relTop * scaleY).round();
+    var cropW = (overlaySize * scaleX).round();
+    var cropH = (overlaySize * scaleY).round();
+
+    final paddingX = (cropW * 0.04).round();
+    final paddingY = (cropH * 0.04).round();
+
+    cropX = (cropX - paddingX).clamp(0, image.width - 1);
+    cropY = (cropY - paddingY).clamp(0, image.height - 1);
+    cropW = (cropW + paddingX * 2).clamp(1, image.width - cropX);
+    cropH = (cropH + paddingY * 2).clamp(1, image.height - cropY);
+
+    cropped = img.copyCrop(
+      image,
+      x: cropX,
+      y: cropY,
+      width: cropW,
+      height: cropH,
+    );
   }
 
-  final overlaySize = screenW * 0.70;
-  final left = (screenW - overlaySize) / 2;
-  final top = (screenH - overlaySize) / 2;
-
-  final relLeft = left - dx;
-  final relTop = top - dy;
-
-  final scaleX = image.width / previewW;
-  final scaleY = image.height / previewH;
-
-  final int cropX = (relLeft * scaleX).clamp(0, image.width).toInt();
-  final int cropY = (relTop * scaleY).clamp(0, image.height).toInt();
-  int cropW = (overlaySize * scaleX).toInt();
-  int cropH = (overlaySize * scaleY).toInt();
-
-  if (cropX + cropW > image.width) cropW = image.width - cropX;
-  if (cropY + cropH > image.height) cropH = image.height - cropY;
-
-  final cropped = img.copyCrop(
-    image,
-    x: cropX,
-    y: cropY,
-    width: cropW,
-    height: cropH,
-  );
-
-  return img.encodeJpg(cropped, quality: 85);
+  final enhanced = _enhanceForOcr(cropped);
+  return img.encodeJpg(enhanced, quality: 95);
 }
 
-// ======== Overlay ========
+img.Image _enhanceForOcr(img.Image image) {
+  var processed = image;
+
+  if (processed.width < 1400) {
+    processed = img.copyResize(
+      processed,
+      width: 1400,
+      interpolation: img.Interpolation.cubic,
+    );
+  }
+
+  processed = img.adjustColor(
+    processed,
+    contrast: 1.2,
+    brightness: 1.03,
+    saturation: 1.02,
+  );
+  processed = img.gaussianBlur(processed, radius: 1);
+
+  return processed;
+}
 
 class _CardFrameOverlay extends StatelessWidget {
   const _CardFrameOverlay();
 
   @override
-  Widget build(BuildContext context) {
-    return CustomPaint(painter: _CardFramePainter());
-  }
+  Widget build(BuildContext context) =>
+      CustomPaint(painter: _CardFramePainter());
 }
 
 class _CardFramePainter extends CustomPainter {
@@ -366,7 +431,6 @@ class _CardFramePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final square = size.width * 0.70;
-
     final left = (size.width - square) / 2;
     final top = (size.height - square) / 2;
 

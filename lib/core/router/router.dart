@@ -26,6 +26,7 @@ class MagicRouter {
       );
 
   static void pop() => navigatorKey.currentState?.pop();
+  // ignore: strict_top_level_inference, type_annotate_public_apis
   static void popWithResult(result) => navigatorKey.currentState?.pop(result);
 
   static Route<dynamic> _materialPageRoute(Widget page) =>

@@ -153,14 +153,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
-  cupertino_icons:
+  dartz:
     dependency: "direct main"
     description:
-      name: cupertino_icons
-      sha256: "41e005c33bd814be4d3096aff55b1908d419fde52ca656c8c47719ec745873cd"
+      name: dartz
+      sha256: e6acf34ad2e31b1eb00948692468c30ab48ac8250e0f0df661e29f12dd252168
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.9"
+    version: "0.10.1"
   dbus:
     dependency: transitive
     description:
@@ -233,30 +233,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.5.1"
-  firebase_remote_config:
-    dependency: "direct main"
-    description:
-      name: firebase_remote_config
-      sha256: "823c9017277daa6f754e6d7389de8fb4b96723894fca3f42cf0860019e6a4053"
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.3.0"
-  firebase_remote_config_platform_interface:
-    dependency: transitive
-    description:
-      name: firebase_remote_config_platform_interface
-      sha256: "93662b23fc8cc4463f98355a2aeebbfb6f67ab81bfc763c7e6e874107f31d217"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.1"
-  firebase_remote_config_web:
-    dependency: transitive
-    description:
-      name: firebase_remote_config_web
-      sha256: "427e4d1495580e3edde5b2b6f641a712799fec7b43c7db157622b29267daa15b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.10.5"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -304,6 +280,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.7.3"
+  get_it:
+    dependency: "direct main"
+    description:
+      name: get_it
+      sha256: "568d62f0e68666fb5d95519743b3c24a34c7f19d834b0658c46e26d778461f66"
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.2.1"
   get_storage:
     dependency: "direct main"
     description:
@@ -312,14 +296,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
-  http:
-    dependency: "direct main"
+  google_mlkit_commons:
+    dependency: transitive
     description:
-      name: http
-      sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
+      name: google_mlkit_commons
+      sha256: "3e69fea4211727732cc385104e675ad1e40b29f12edd492ee52fa108423a6124"
       url: "https://pub.dev"
     source: hosted
-    version: "1.6.0"
+    version: "0.11.1"
+  google_mlkit_text_recognition:
+    dependency: "direct main"
+    description:
+      name: google_mlkit_text_recognition
+      sha256: "10a8d1a64fa21efda89514f6df88bbb7885be3ae1bfb7a6d229132d802a20d22"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.15.1"
   http_parser:
     dependency: transitive
     description:

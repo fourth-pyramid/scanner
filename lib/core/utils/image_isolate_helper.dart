@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
@@ -63,8 +64,7 @@ class ImageIsolateHelper {
 
 /// Parameters for image compression
 class _CompressionParams {
+  _CompressionParams({required this.imagePath, required this.targetWidth});
   final String imagePath;
   final int targetWidth;
-
-  _CompressionParams({required this.imagePath, required this.targetWidth});
 }

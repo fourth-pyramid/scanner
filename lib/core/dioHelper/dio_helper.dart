@@ -1,7 +1,8 @@
 // ignore_for_file: avoid_classes_with_only_static_members
 
 import 'package:dio/dio.dart';
-import 'package:qrscanner/core/appStorage/app_storage.dart';
+
+import '../appStorage/app_storage.dart';
 
 class DioHelper {
   static const _defaultBaseUrl = 'https://bestscan.store/api/v1/';
@@ -43,12 +44,21 @@ class DioHelper {
   }) {
     final headers = isAuth && AppStorage.getToken != null
         ? {'Authorization': 'Bearer ${AppStorage.getToken}'}
+        : <String, dynamic>{};
+
+    // Use JSON content-type when sending body, FormData has its own content-type
+    final contentType = formData == null && body != null
+        ? 'application/json'
         : null;
+
+    final options = contentType != null
+        ? Options(headers: {...headers, 'Content-Type': contentType})
+        : Options(headers: headers.isNotEmpty ? headers : null);
 
     return dioSingleton.post(
       path,
-      data: formData ?? FormData.fromMap(body ?? {}),
-      options: Options(headers: headers),
+      data: formData ?? body,
+      options: options,
       onSendProgress: onSendProgress,
     );
   }
