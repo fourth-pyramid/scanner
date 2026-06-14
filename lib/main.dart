@@ -3,22 +3,20 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
-import 'core/appStorage/app_storage.dart';
-import 'core/dioHelper/dio_helper.dart';
-import 'core/router/router.dart';
-import 'features/app_disabled_view.dart';
-import 'features/settings/presentation/settings_view.dart';
-import 'firebase_options.dart';
-import 'core/di/injection_container.dart';
-import 'core/theme/app_theme.dart';
+import 'package:qrscanner/core/appStorage/app_storage.dart';
+import 'package:qrscanner/core/di/injection_container.dart';
+import 'package:qrscanner/core/dioHelper/dio_helper.dart';
+import 'package:qrscanner/core/router/router.dart';
+import 'package:qrscanner/core/theme/app_theme.dart';
+import 'package:qrscanner/features/app_disabled_view.dart';
+import 'package:qrscanner/features/settings/presentation/settings_view.dart';
+import 'package:qrscanner/firebase_options.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) =>
       super.createHttpClient(context)
-        ..badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
+        ..badCertificateCallback = (cert, host, port) => true;
 }
 
 void main() async {
@@ -28,7 +26,7 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-  } catch (e) {
+  } on Object catch (_) {
     // Firebase initialization failed
   }
 
@@ -40,7 +38,7 @@ void main() async {
     DioHelper.initBaseUrl();
 
     runApp(const MyApp());
-  } catch (e) {
+  } on Object catch (_) {
     // App initialization failed
   }
 }
@@ -88,7 +86,7 @@ class MyApp extends StatelessWidget {
       }
 
       // Data available state
-      final bool isAppEnabled = snapshot.data?.get('enabled') ?? false;
+      final isAppEnabled = (snapshot.data?.get('enabled') as bool?) ?? false;
 
       if (!isAppEnabled) {
         return MaterialApp(

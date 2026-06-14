@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 
-import '../../../../core/dioHelper/dio_helper.dart';
-import '../../../../core/errors/exceptions.dart';
+import 'package:qrscanner/core/dioHelper/dio_helper.dart';
+import 'package:qrscanner/core/errors/exceptions.dart';
 
 /// Remote data source for login feature
 abstract class LoginRemoteDataSource {
@@ -29,7 +29,7 @@ class LoginRemoteDataSourceImpl implements LoginRemoteDataSource {
         'phone': phoneType,
       };
 
-      final response = await DioHelper.post('login', false, body: body);
+      final response = await DioHelper.post('login', isAuth: false, body: body);
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
       throw NetworkException(

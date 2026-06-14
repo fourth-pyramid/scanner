@@ -1,9 +1,8 @@
 import 'package:dartz/dartz.dart';
-
-import '../../../../core/errors/exceptions.dart';
-import '../../../../core/errors/failures.dart';
-import '../../domain/repositories/settings_repository.dart';
-import '../datasources/settings_local_datasource.dart';
+import 'package:qrscanner/core/errors/exceptions.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/features/settings/data/datasources/settings_local_datasource.dart';
+import 'package:qrscanner/features/settings/domain/repositories/settings_repository.dart';
 
 /// Implementation of SettingsRepository
 class SettingsRepositoryImpl implements SettingsRepository {

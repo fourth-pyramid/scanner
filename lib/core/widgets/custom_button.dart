@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
+import 'package:qrscanner/core/theme/app_colors.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
 
 enum ButtonVariant { primary, secondary, outline }
 
@@ -43,21 +43,21 @@ class CustomButton extends StatelessWidget {
     final h = heightButton ?? 52.0;
     final w = widthButton ?? double.infinity;
 
-    final Color bg =
+    final bg =
         bgColor ??
         (variant == ButtonVariant.outline
             ? Colors.transparent
             : variant == ButtonVariant.secondary
             ? colorSurfaceVariant
             : colorPrimary);
-    final Color fg =
+    final fg =
         fontColor ??
         (variant == ButtonVariant.outline
             ? colorPrimary
             : variant == ButtonVariant.secondary
             ? colorTextPrimary
             : colorSurface);
-    final Color border =
+    final border =
         borderColor ??
         (variant == ButtonVariant.outline ? colorPrimary : Colors.transparent);
 

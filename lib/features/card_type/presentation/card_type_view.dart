@@ -1,14 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-
-import '../../../core/router/router.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../extract_image/presentation/cubit/extract_image_cubit.dart';
-import '../../extract_image/presentation/pages/extract_image_page.dart';
-import 'cubit/card_type_cubit.dart';
-import 'cubit/card_type_state.dart';
+import 'package:qrscanner/core/router/router.dart';
+import 'package:qrscanner/core/theme/app_colors.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
+import 'package:qrscanner/features/card_type/presentation/cubit/card_type_cubit.dart';
+import 'package:qrscanner/features/card_type/presentation/cubit/card_type_state.dart';
+import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_cubit.dart';
+import 'package:qrscanner/features/extract_image/presentation/pages/extract_image_page.dart';
 
 class CardTypeView extends StatelessWidget {
   const CardTypeView({super.key});
@@ -23,7 +23,11 @@ class CardTypeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (context) => GetIt.I<CardTypeCubit>()..getCategories(),
+    create: (context) {
+      final cubit = GetIt.I<CardTypeCubit>();
+      unawaited(cubit.getCategories());
+      return cubit;
+    },
     child: BlocBuilder<CardTypeCubit, CardTypeState>(
       buildWhen: (previous, current) =>
           previous.runtimeType != current.runtimeType,
@@ -86,12 +90,14 @@ class CardTypeView extends StatelessWidget {
                             return _CategoryCard(
                               fallbackImage: fallbackImage,
                               label: item.name ?? '',
-                              onTap: () {
-                                MagicRouter.navigateTo(
+                              onTap: () async {
+                                await MagicRouter.navigateTo(
                                   BlocProvider(
-                                    create: (context) =>
-                                        GetIt.I<ExtractImageCubit>()
-                                          ..loadHistoryCount(),
+                                    create: (context) {
+                                      final cubit = GetIt.I<ExtractImageCubit>();
+                                      unawaited(cubit.loadHistoryCount());
+                                      return cubit;
+                                    },
                                     child: ExtractImagePage(
                                       scanType: item.name ?? '',
                                       categoryId: item.id!,
@@ -126,7 +132,7 @@ class _CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => GestureDetector(
     onTap: onTap,
-    child: Container(
+    child: DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: colorBorder, width: 1.2),

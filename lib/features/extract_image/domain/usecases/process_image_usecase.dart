@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../entities/card_data.dart';
-import '../repositories/extract_image_repository.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/core/usecases/usecase.dart';
+import 'package:qrscanner/features/extract_image/domain/entities/card_data.dart';
+import 'package:qrscanner/features/extract_image/domain/repositories/extract_image_repository.dart';
 
 /// Use case for processing an image and extracting card data
 class ProcessImageUseCase implements UseCase<CardData, ProcessImageParams> {
@@ -14,7 +14,7 @@ class ProcessImageUseCase implements UseCase<CardData, ProcessImageParams> {
 
   @override
   Future<Either<Failure, CardData>> call(ProcessImageParams params) async =>
-      await repository.processImage(params.imageFile);
+      repository.processImage(params.imageFile);
 }
 
 class ProcessImageParams {

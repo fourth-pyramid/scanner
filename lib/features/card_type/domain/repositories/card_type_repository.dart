@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
-import '../entities/category_entity.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/features/card_type/domain/entities/category_entity.dart';
 
 /// Repository contract for card types/categories
 /// Defined in Domain Layer - implemented in Data Layer

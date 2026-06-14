@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/usecases/usecase.dart';
-import '../../domain/entities/saved_scan_entity.dart';
-import '../../domain/usecases/get_saved_scans_usecase.dart';
-import 'saved_data_state.dart';
+import 'package:qrscanner/core/usecases/usecase.dart';
+import 'package:qrscanner/features/saved_data/domain/entities/saved_scan_entity.dart';
+import 'package:qrscanner/features/saved_data/domain/usecases/get_saved_scans_usecase.dart';
+import 'package:qrscanner/features/saved_data/presentation/cubit/saved_data_state.dart';
 
 /// Cubit for SavedData feature
 /// Only handles UI state and calls UseCases - no business logic

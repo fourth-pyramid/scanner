@@ -1,12 +1,11 @@
 import 'package:dartz/dartz.dart';
-
-import '../../../../core/appStorage/get_categories_model.dart';
-import '../../../../core/errors/exceptions.dart';
-import '../../../../core/errors/failures.dart';
-import '../../domain/entities/category_entity.dart';
-import '../../domain/repositories/card_type_repository.dart';
-import '../datasources/card_type_remote_datasource.dart';
-import '../models/category_model_mapper.dart';
+import 'package:qrscanner/core/appStorage/get_categories_model.dart';
+import 'package:qrscanner/core/errors/exceptions.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/features/card_type/data/datasources/card_type_remote_datasource.dart';
+import 'package:qrscanner/features/card_type/data/models/category_model_mapper.dart';
+import 'package:qrscanner/features/card_type/domain/entities/category_entity.dart';
+import 'package:qrscanner/features/card_type/domain/repositories/card_type_repository.dart';
 
 /// Implementation of CardTypeRepository
 class CardTypeRepositoryImpl implements CardTypeRepository {

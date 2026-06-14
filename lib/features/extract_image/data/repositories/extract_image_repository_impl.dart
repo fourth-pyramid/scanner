@@ -3,14 +3,13 @@ import 'dart:ui';
 
 import 'package:dartz/dartz.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-
-import '../../../../core/errors/exceptions.dart';
-import '../../../../core/errors/failures.dart';
-import '../../../../core/utils/image_isolate_helper.dart';
-import '../../../../core/utils/text_isolate_helper.dart';
-import '../../domain/entities/card_data.dart';
-import '../../domain/repositories/extract_image_repository.dart';
-import '../datasources/extract_image_remote_datasource.dart';
+import 'package:qrscanner/core/errors/exceptions.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/core/utils/image_isolate_helper.dart';
+import 'package:qrscanner/core/utils/text_isolate_helper.dart';
+import 'package:qrscanner/features/extract_image/data/datasources/extract_image_remote_datasource.dart';
+import 'package:qrscanner/features/extract_image/domain/entities/card_data.dart';
+import 'package:qrscanner/features/extract_image/domain/repositories/extract_image_repository.dart';
 
 class ExtractImageRepositoryImpl implements ExtractImageRepository {
   ExtractImageRepositoryImpl({required this.remoteDataSource});
@@ -23,7 +22,7 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
       final textRecognizer = TextRecognizer();
 
       try {
-        File finalImage = imageFile;
+        var finalImage = imageFile;
         final fileSizeInKB = await imageFile.length() / 1024;
 
         if (fileSizeInKB > 4096) {
@@ -32,10 +31,10 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
                 await ImageIsolateHelper.compressImageInIsolate(
                   imagePath: imageFile.path,
                 );
-            if (compressedFile != null && await compressedFile.exists()) {
+            if (compressedFile != null && compressedFile.existsSync()) {
               finalImage = compressedFile;
             }
-          } catch (_) {
+          } on Object catch (_) {
             // Continue with original file.
           }
         }
@@ -108,7 +107,7 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
         var pinDetected = false;
         var serialDetected = false;
 
-        if (await pinRegionImage.exists()) {
+        if (pinRegionImage.existsSync()) {
           foundPin = await _extractBestPin(
             textRecognizer: textRecognizer,
             baseImage: pinRegionImage,
@@ -117,7 +116,7 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
           pinDetected = foundPin != null;
         }
 
-        if (await serialRegionImage.exists()) {
+        if (serialRegionImage.existsSync()) {
           foundSerial = await _extractBestSerial(
             textRecognizer: textRecognizer,
             baseImage: serialRegionImage,
@@ -198,7 +197,7 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
 
     for (final block in recognizedText.blocks) {
       for (final line in block.lines) {
-        final normalized = line.text.replaceAll(RegExp(r'[^0-9A-Za-z]'), '');
+        final normalized = line.text.replaceAll(RegExp('[^0-9A-Za-z]'), '');
         if (normalized.length < expectedMinLength) continue;
 
         final box = line.boundingBox;
@@ -232,7 +231,7 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
 
     try {
       for (final file in [baseImage, ...variantFiles]) {
-        if (!await file.exists()) continue;
+        if (!file.existsSync()) continue;
 
         final text = await _recognizeText(textRecognizer, file);
         if (text.isEmpty) continue;
@@ -264,7 +263,7 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
 
     try {
       for (final file in [baseImage, ...variantFiles]) {
-        if (!await file.exists()) continue;
+        if (!file.existsSync()) continue;
 
         final text = await _recognizeText(textRecognizer, file);
         if (text.isEmpty) continue;
@@ -328,7 +327,7 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
       return scoreB.compareTo(scoreA);
     });
 
-    String best = candidates.first;
+    var best = candidates.first;
     for (final candidate in candidates.skip(1)) {
       best = _mergeCandidates(
         best,
@@ -418,10 +417,10 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
 
   Future<void> _deleteIfTemp(File file) async {
     try {
-      if (await file.exists()) {
+      if (file.existsSync()) {
         await file.delete();
       }
-    } catch (_) {
+    } on Object catch (_) {
       // Ignore cleanup errors.
     }
   }

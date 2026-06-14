@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../repositories/extract_image_repository.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/core/usecases/usecase.dart';
+import 'package:qrscanner/features/extract_image/domain/repositories/extract_image_repository.dart';
 
 /// Use case for submitting scanned card data
 class SubmitScanUseCase implements UseCase<Unit, SubmitScanParams> {
@@ -13,7 +13,7 @@ class SubmitScanUseCase implements UseCase<Unit, SubmitScanParams> {
 
   @override
   Future<Either<Failure, Unit>> call(SubmitScanParams params) async =>
-      await repository.submitScan(
+      repository.submitScan(
         pin: params.pin,
         serial: params.serial,
         phoneType: params.phoneType,

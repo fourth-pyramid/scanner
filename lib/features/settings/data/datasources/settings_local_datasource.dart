@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:network_info_plus/network_info_plus.dart';
 
-import '../../../../core/appStorage/app_storage.dart';
-import '../../../../core/dioHelper/dio_helper.dart';
-import '../../../../core/errors/exceptions.dart';
+import 'package:qrscanner/core/appStorage/app_storage.dart';
+import 'package:qrscanner/core/dioHelper/dio_helper.dart';
+import 'package:qrscanner/core/errors/exceptions.dart';
 
 /// Local data source for settings feature
 abstract class SettingsLocalDataSource {

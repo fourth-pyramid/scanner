@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 
-import '../errors/failures.dart';
+import 'package:qrscanner/core/errors/failures.dart';
 
 /// Abstract base class for all use cases
 /// [Type] - The return type

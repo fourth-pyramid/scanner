@@ -2,7 +2,7 @@
 
 import 'package:dio/dio.dart';
 
-import '../appStorage/app_storage.dart';
+import 'package:qrscanner/core/appStorage/app_storage.dart';
 
 class DioHelper {
   static const _defaultBaseUrl = 'https://bestscan.store/api/v1/';
@@ -20,7 +20,7 @@ class DioHelper {
 
   // Update base URL dynamically
   static void updateBaseUrl(String baseUrl) {
-    String formattedUrl = baseUrl;
+    var formattedUrl = baseUrl;
     if (!formattedUrl.endsWith('/')) formattedUrl += '/';
     if (!formattedUrl.contains('api/v1')) formattedUrl += 'api/v1/';
     dioSingleton.options.baseUrl = formattedUrl;
@@ -36,11 +36,11 @@ class DioHelper {
 
   // POST request
   static Future<Response<dynamic>> post(
-    String path,
-    bool isAuth, {
+    String path, {
+    required bool isAuth,
     FormData? formData,
     Map<String, dynamic>? body,
-    Function(int, int)? onSendProgress,
+    void Function(int, int)? onSendProgress,
   }) {
     final headers = isAuth && AppStorage.getToken != null
         ? {'Authorization': 'Bearer ${AppStorage.getToken}'}

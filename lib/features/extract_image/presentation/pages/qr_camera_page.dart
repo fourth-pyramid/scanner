@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -33,7 +34,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
   @override
   void initState() {
     super.initState();
-    _setupCamera();
+    unawaited(_setupCamera());
   }
 
   Future<void> _setupCamera() async {
@@ -74,7 +75,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
 
       try {
         await controller.lockCaptureOrientation();
-      } catch (_) {
+      } on Object catch (_) {
         // Some devices do not support capture orientation lock.
       }
 
@@ -87,7 +88,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
         _controller = controller;
         _isLoading = false;
       });
-    } catch (e) {
+    } on Object catch (e) {
       setState(() {
         _error = 'Failed to start camera: $e';
         _isLoading = false;
@@ -97,7 +98,10 @@ class _QrCameraPageState extends State<QrCameraPage> {
 
   @override
   void dispose() {
-    _controller?.dispose();
+    final controller = _controller;
+    if (controller != null) {
+      unawaited(controller.dispose());
+    }
     super.dispose();
   }
 
@@ -111,7 +115,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
       await controller.setFlashMode(
         _isFlashOn ? FlashMode.torch : FlashMode.off,
       );
-    } catch (_) {
+    } on Object catch (_) {
       _isFlashOn = false;
       setState(() {});
     }
@@ -126,7 +130,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
       await controller.setExposurePoint(point);
       await controller.setFocusMode(FocusMode.auto);
       await controller.setExposureMode(ExposureMode.auto);
-    } catch (_) {
+    } on Object catch (_) {
       // Supported on some devices only.
     }
   }
@@ -167,7 +171,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
       if (mounted) {
         Navigator.of(context).pop(XFile(savePath));
       }
-    } catch (_) {
+    } on Object catch (_) {
       _isProcessing = false;
       setState(() {});
     }
@@ -229,9 +233,9 @@ class _QrCameraPageState extends State<QrCameraPage> {
                       (localOffset.dx / box.size.width).clamp(0.0, 1.0),
                       (localOffset.dy / box.size.height).clamp(0.0, 1.0),
                     );
-                    _setFocusPoint(focusPoint);
+                    unawaited(_setFocusPoint(focusPoint));
                   },
-                  child: Container(
+                  child: ColoredBox(
                     key: _previewContainerKey,
                     color: Colors.black,
                     child: CameraPreview(controller),
@@ -324,9 +328,9 @@ class _QrCameraPageState extends State<QrCameraPage> {
   }
 }
 
-List<int> _processImage(Map data) {
+List<int> _processImage(Map<String, dynamic> data) {
   final raw = data['imageBytes'];
-  final Uint8List bytes = raw is Uint8List
+  final bytes = raw is Uint8List
       ? raw
       : Uint8List.fromList(raw as List<int>);
   final image = img.decodeImage(bytes);

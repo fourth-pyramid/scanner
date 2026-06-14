@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
-import '../entities/saved_scan_entity.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/features/saved_data/domain/entities/saved_scan_entity.dart';
 
 /// Repository contract for saved data
 /// Defined in Domain Layer - implemented in Data Layer

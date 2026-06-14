@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../entities/category_entity.dart';
-import '../repositories/card_type_repository.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/core/usecases/usecase.dart';
+import 'package:qrscanner/features/card_type/domain/entities/category_entity.dart';
+import 'package:qrscanner/features/card_type/domain/repositories/card_type_repository.dart';
 
 /// Use case for getting categories
 class GetCategoriesUseCase implements NoParamsUseCase<List<CategoryEntity>> {
@@ -12,5 +12,5 @@ class GetCategoriesUseCase implements NoParamsUseCase<List<CategoryEntity>> {
 
   @override
   Future<Either<Failure, List<CategoryEntity>>> call(NoParams params) async =>
-      await repository.getCategories();
+      repository.getCategories();
 }

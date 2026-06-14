@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/usecases/usecase.dart';
-import '../../domain/entities/card_data.dart';
-import '../../domain/usecases/get_history_count_usecase.dart';
-import '../../domain/usecases/process_image_usecase.dart';
-import '../../domain/usecases/submit_scan_usecase.dart';
-import 'extract_image_state.dart';
+import 'package:qrscanner/core/usecases/usecase.dart';
+import 'package:qrscanner/features/extract_image/domain/entities/card_data.dart';
+import 'package:qrscanner/features/extract_image/domain/usecases/get_history_count_usecase.dart';
+import 'package:qrscanner/features/extract_image/domain/usecases/process_image_usecase.dart';
+import 'package:qrscanner/features/extract_image/domain/usecases/submit_scan_usecase.dart';
+import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_state.dart';
 
 /// Cubit for ExtractImage feature
 /// Only handles UI state and calls UseCases - no business logic
@@ -106,10 +106,10 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
         emit(ScanError(message: failure.message));
         return false;
       },
-      (_) {
+      (_) async {
         emit(ScanSuccess());
         // Reload history count after successful submission
-        loadHistoryCount();
+        await loadHistoryCount();
         return true;
       },
     );

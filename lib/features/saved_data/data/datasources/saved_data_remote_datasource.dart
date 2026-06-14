@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-import '../../../../core/dioHelper/dio_helper.dart';
-import '../../../../core/errors/exceptions.dart';
+import 'package:qrscanner/core/dioHelper/dio_helper.dart';
+import 'package:qrscanner/core/errors/exceptions.dart';
 
 /// Remote data source for saved data feature
 abstract class SavedDataRemoteDataSource {

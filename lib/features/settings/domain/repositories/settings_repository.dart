@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
+import 'package:qrscanner/core/errors/failures.dart';
 
 /// Repository contract for settings
 /// Defined in Domain Layer - implemented in Data Layer

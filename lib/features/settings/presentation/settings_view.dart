@@ -1,23 +1,27 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-
-import '../../../core/widgets/custom_button.dart';
-import '../../../core/widgets/custom_text_field.dart';
-import '../../../core/widgets/server_type_indicator.dart';
-import '../../../core/router/router.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../login/presentation/login_view.dart';
-import 'cubit/settings_cubit.dart';
-import 'cubit/settings_state.dart';
+import 'package:qrscanner/core/router/router.dart';
+import 'package:qrscanner/core/theme/app_colors.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
+import 'package:qrscanner/core/widgets/custom_button.dart';
+import 'package:qrscanner/core/widgets/custom_text_field.dart';
+import 'package:qrscanner/core/widgets/server_type_indicator.dart';
+import 'package:qrscanner/features/login/presentation/login_view.dart';
+import 'package:qrscanner/features/settings/presentation/cubit/settings_cubit.dart';
+import 'package:qrscanner/features/settings/presentation/cubit/settings_state.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (context) => GetIt.I<SettingsCubit>()..loadSettings(),
+    create: (context) {
+      final cubit = GetIt.I<SettingsCubit>();
+      unawaited(cubit.loadSettings());
+      return cubit;
+    },
     child: Scaffold(
       backgroundColor: colorBackground,
       appBar: AppBar(
@@ -38,7 +42,7 @@ class SettingsView extends StatelessWidget {
         child: BlocConsumer<SettingsCubit, SettingsState>(
           listener: (context, state) {
             if (state is SettingsSaved) {
-              MagicRouter.navigateToReplacment(const LogInView());
+              unawaited(MagicRouter.navigateToReplacment(const LogInView()));
             }
           },
           buildWhen: (previous, current) =>
@@ -150,9 +154,9 @@ class SettingsView extends StatelessWidget {
                         color: Colors.white,
                         size: 20,
                       ),
-                      onPress: () {
+                      onPress: () async {
                         if (cubit.formKey.currentState!.validate()) {
-                          cubit.saveSettings();
+                          await cubit.saveSettings();
                         }
                       },
                     ),

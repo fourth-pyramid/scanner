@@ -1,5 +1,5 @@
-import '../../../../core/appStorage/user_model.dart';
-import '../../domain/entities/user_entity.dart';
+import 'package:qrscanner/core/appStorage/user_model.dart';
+import 'package:qrscanner/features/login/domain/entities/user_entity.dart';
 
 /// Mapper to convert UserModel (Data) to UserEntity (Domain)
 extension UserModelMapper on UserModel {

@@ -1,20 +1,25 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/custom_text_field.dart';
-import '../component/saved_data_card.dart';
-import 'cubit/saved_data_cubit.dart';
-import 'cubit/saved_data_state.dart';
+import 'package:qrscanner/core/theme/app_colors.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
+import 'package:qrscanner/core/widgets/custom_text_field.dart';
+import 'package:qrscanner/features/saved_data/component/saved_data_card.dart';
+import 'package:qrscanner/features/saved_data/presentation/cubit/saved_data_cubit.dart';
+import 'package:qrscanner/features/saved_data/presentation/cubit/saved_data_state.dart';
 
 class SavedDataView extends StatelessWidget {
   const SavedDataView({super.key});
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (context) => GetIt.I<SavedDataCubit>()..loadScans(),
+    create: (context) {
+      final cubit = GetIt.I<SavedDataCubit>();
+      unawaited(cubit.loadScans());
+      return cubit;
+    },
     child: Scaffold(
       backgroundColor: colorBackground,
       appBar: AppBar(
@@ -200,7 +205,7 @@ class _EmptyOrErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = isError ? colorError : colorTextSecondary;
+    final color = isError ? colorError : colorTextSecondary;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),

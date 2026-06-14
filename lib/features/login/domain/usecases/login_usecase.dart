@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../entities/user_entity.dart';
-import '../repositories/login_repository.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/core/usecases/usecase.dart';
+import 'package:qrscanner/features/login/domain/entities/user_entity.dart';
+import 'package:qrscanner/features/login/domain/repositories/login_repository.dart';
 
 /// Use case for user login
 class LoginUseCase implements UseCase<UserEntity, LoginParams> {
@@ -12,7 +12,7 @@ class LoginUseCase implements UseCase<UserEntity, LoginParams> {
 
   @override
   Future<Either<Failure, UserEntity>> call(LoginParams params) async =>
-      await repository.login(
+      repository.login(
         email: params.email,
         password: params.password,
         phoneType: params.phoneType,

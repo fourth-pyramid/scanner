@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../domain/entities/saved_scan_entity.dart';
+import 'package:qrscanner/features/saved_data/domain/entities/saved_scan_entity.dart';
 
 /// States for SavedDataCubit
 abstract class SavedDataState extends Equatable {

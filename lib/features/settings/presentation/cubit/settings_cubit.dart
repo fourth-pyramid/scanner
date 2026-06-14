@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/usecases/usecase.dart';
-import '../../domain/usecases/get_settings_usecase.dart';
-import '../../domain/usecases/get_wifi_ip_usecase.dart';
-import '../../domain/usecases/save_settings_usecase.dart';
-import 'settings_state.dart';
+import 'package:qrscanner/core/usecases/usecase.dart';
+import 'package:qrscanner/features/settings/domain/usecases/get_settings_usecase.dart';
+import 'package:qrscanner/features/settings/domain/usecases/get_wifi_ip_usecase.dart';
+import 'package:qrscanner/features/settings/domain/usecases/save_settings_usecase.dart';
+import 'package:qrscanner/features/settings/presentation/cubit/settings_state.dart';
 
 /// Cubit for Settings feature
 /// Only handles UI state and calls UseCases - no business logic

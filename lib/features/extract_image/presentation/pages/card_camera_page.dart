@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -28,17 +29,17 @@ class _CardCameraPageState extends State<CardCameraPage> {
   @override
   void initState() {
     super.initState();
-    _setupCamera();
+    unawaited(_setupCamera());
   }
 
   Future<void> _setupCamera() async {
     try {
       // طلب إذن الكاميرا - مع معالجة الأخطاء
-      bool permissionGranted = false;
+      var permissionGranted = false;
       try {
         final status = await Permission.camera.request();
         permissionGranted = status.isGranted;
-      } catch (e) {
+      } on Object catch (e) {
         // في حالة فشل permission_handler، نفترض الإذن ممنوح على الويندوز
         debugPrint('Permission handler error: $e');
         permissionGranted =
@@ -89,7 +90,7 @@ class _CardCameraPageState extends State<CardCameraPage> {
           imageFormatGroup: ImageFormatGroup.jpeg,
         );
         await controller.initialize();
-      } catch (_) {
+      } on Object catch (_) {
         controller = CameraController(
           camera,
           ResolutionPreset.ultraHigh,
@@ -108,7 +109,7 @@ class _CardCameraPageState extends State<CardCameraPage> {
       try {
         // محاولة قفل البياض الأبيض للحصول على ألوان أفضل
         await controller.lockCaptureOrientation();
-      } catch (e) {
+      } on Object catch (e) {
         debugPrint('Some advanced features not available: $e');
       }
 
@@ -123,7 +124,7 @@ class _CardCameraPageState extends State<CardCameraPage> {
         _controller = controller;
         _isLoading = false;
       });
-    } catch (e, stackTrace) {
+    } on Object catch (e, stackTrace) {
       debugPrint('❌ Camera setup error: $e');
       debugPrint('Stack trace: $stackTrace');
       setState(() {
@@ -135,12 +136,15 @@ class _CardCameraPageState extends State<CardCameraPage> {
 
   @override
   void dispose() {
-    _controller?.dispose();
-    SystemChrome.setPreferredOrientations([
+    final controller = _controller;
+    if (controller != null) {
+      unawaited(controller.dispose());
+    }
+    unawaited(SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
-    ]);
+    ]));
     super.dispose();
   }
 
@@ -158,7 +162,7 @@ class _CardCameraPageState extends State<CardCameraPage> {
       // await Future.delayed(const Duration(milliseconds: 100));
 
       // التقاط الصورة بأعلى جودة
-      final XFile image = await controller.takePicture();
+      final image = await controller.takePicture();
 
       // // إطفاء الفلاش بعد التصوير
       // if (_isFlashOn) {
@@ -166,9 +170,9 @@ class _CardCameraPageState extends State<CardCameraPage> {
       // }
 
       // قراءة الصورة وتحسينها
-      final File imageFile = File(image.path);
+      final imageFile = File(image.path);
       final imageBytes = await imageFile.readAsBytes();
-      final img.Image? originalImage = img.decodeImage(imageBytes);
+      final originalImage = img.decodeImage(imageBytes);
 
       if (originalImage == null) {
         if (mounted) {
@@ -190,7 +194,7 @@ class _CardCameraPageState extends State<CardCameraPage> {
       final cropY = (imageHeight - cropSize) ~/ 2;
 
       // قص الصورة للمربع فقط
-      img.Image croppedImage = img.copyCrop(
+      var croppedImage = img.copyCrop(
         originalImage,
         x: cropX,
         y: cropY,
@@ -210,15 +214,15 @@ class _CardCameraPageState extends State<CardCameraPage> {
       if (mounted) {
         Navigator.of(context).pop(image);
       }
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error taking/cropping picture: $e');
       // في حالة فشل القص، نرجع الصورة الأصلية
       try {
-        final XFile image = await controller.takePicture();
+        final image = await controller.takePicture();
         if (mounted) {
           Navigator.of(context).pop(image);
         }
-      } catch (e2) {
+      } on Object catch (e2) {
         debugPrint('Error in fallback: $e2');
       }
     }
@@ -246,7 +250,7 @@ class _CardCameraPageState extends State<CardCameraPage> {
       await controller.setExposurePoint(point);
       await controller.setFocusMode(FocusMode.auto);
       await controller.setExposureMode(ExposureMode.auto);
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error setting focus: $e');
     }
   }
@@ -264,7 +268,7 @@ class _CardCameraPageState extends State<CardCameraPage> {
       await controller.setFlashMode(
         _isFlashOn ? FlashMode.torch : FlashMode.off,
       );
-    } catch (e) {
+    } on Object catch (e) {
       debugPrint('Error toggling flash: $e');
       setState(() {
         _isFlashOn = false;
@@ -321,7 +325,7 @@ class _CardCameraPageState extends State<CardCameraPage> {
                     offset.dx / box.size.width,
                     offset.dy / box.size.height,
                   );
-                  _setFocusPoint(point);
+                  unawaited(_setFocusPoint(point));
                 },
                 child: CameraPreview(_controller!),
               ),

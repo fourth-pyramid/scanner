@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../router/router.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
+import 'package:qrscanner/core/router/router.dart';
+import 'package:qrscanner/core/theme/app_colors.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
 
 void showSnackBar(
   String message, {
@@ -18,13 +18,13 @@ void showSnackBar(
   final context = MagicRouter.currentContext;
   if (!context.mounted) return;
 
-  final Color bg = isError
+  final bg = isError
       ? colorError
       : isSuccess
       ? colorSuccess
       : color;
 
-  final IconData icon = isError
+  final icon = isError
       ? Icons.error_outline_rounded
       : isSuccess
       ? Icons.check_circle_outline_rounded

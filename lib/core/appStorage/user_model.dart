@@ -2,16 +2,16 @@ class UserModel {
   UserModel({this.status, this.massage, this.data});
 
   UserModel.fromJson(Map<String, dynamic> json) {
-    status = json['status'];
-    massage = json['massage'];
-    data = json['data'] != null ? Data.fromJson(json['data']) : null;
+    status = json['status'] as int?;
+    massage = json['massage'] as String?;
+    data = json['data'] != null ? Data.fromJson(json['data'] as Map<String, dynamic>) : null;
   }
   int? status;
   String? massage;
   Data? data;
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['status'] = status;
     data['massage'] = massage;
     if (this.data != null) {
@@ -25,14 +25,14 @@ class Data {
   Data({this.token, this.user});
 
   Data.fromJson(Map<String, dynamic> json) {
-    token = json['token'];
-    user = json['user'] != null ? User.fromJson(json['user']) : null;
+    token = json['token'] as String?;
+    user = json['user'] != null ? User.fromJson(json['user'] as Map<String, dynamic>) : null;
   }
   String? token;
   User? user;
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['token'] = token;
     if (user != null) {
       data['user'] = user!.toJson();
@@ -56,16 +56,16 @@ class User {
   });
 
   User.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    email = json['email'];
-    role = json['role'];
-    emailVerifiedAt = json['email_verified_at'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
-    active = json['active'];
-    width = json['width'];
-    hight = json['hight'];
+    id = json['id'] as int?;
+    name = json['name'] as String?;
+    email = json['email'] as String?;
+    role = json['role'] as String?;
+    emailVerifiedAt = json['email_verified_at'] as String?;
+    createdAt = json['created_at'] as String?;
+    updatedAt = json['updated_at'] as String?;
+    active = json['active'] as String?;
+    width = json['width'] as String?;
+    hight = json['hight'] as String?;
   }
   int? id;
   String? name;
@@ -79,7 +79,7 @@ class User {
   String? hight;
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['id'] = id;
     data['name'] = name;
     data['email'] = email;

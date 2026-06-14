@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
 
-import '../../../../core/dioHelper/dio_helper.dart';
-import '../../../../core/errors/exceptions.dart';
+import 'package:qrscanner/core/dioHelper/dio_helper.dart';
+import 'package:qrscanner/core/errors/exceptions.dart';
 
 /// Remote data source for extract image feature
 /// Handles API calls for scan submission and history count
@@ -40,7 +40,7 @@ class ExtractImageRemoteDataSourceImpl implements ExtractImageRemoteDataSource {
 
       final formData = FormData.fromMap(fields);
 
-      if (image != null && await image.exists()) {
+      if (image != null && image.existsSync()) {
         final filename = p.basename(image.path);
         final multipartFile = await MultipartFile.fromFile(
           image.path,
@@ -49,7 +49,7 @@ class ExtractImageRemoteDataSourceImpl implements ExtractImageRemoteDataSource {
         formData.files.add(MapEntry('image', multipartFile));
       }
 
-      final response = await DioHelper.post('scan', true, formData: formData);
+      final response = await DioHelper.post('scan', isAuth: true, formData: formData);
 
       if (response.data is! Map<String, dynamic>) {
         throw const ServerException(message: 'Invalid server response');
@@ -84,9 +84,11 @@ class ExtractImageRemoteDataSourceImpl implements ExtractImageRemoteDataSource {
         final data = response.data as Map<String, dynamic>;
 
         if (data['status'] == 1 && data['data'] != null) {
-          return data['data'] is int
-              ? data['data']
-              : int.tryParse(data['data'].toString()) ?? 0;
+          final rawData = data['data'];
+          if (rawData is int) {
+            return rawData;
+          }
+          return int.tryParse(rawData.toString()) ?? 0;
         }
       }
 

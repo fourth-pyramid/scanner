@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import '../../../../core/errors/failures.dart';
-import '../entities/card_data.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/features/extract_image/domain/entities/card_data.dart';
 
 /// Repository contract for image processing and extraction
 /// Defined in Domain Layer - implemented in Data Layer

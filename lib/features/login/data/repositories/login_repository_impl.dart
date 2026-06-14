@@ -1,13 +1,12 @@
 import 'package:dartz/dartz.dart';
-
-import '../../../../core/appStorage/app_storage.dart';
-import '../../../../core/appStorage/user_model.dart';
-import '../../../../core/errors/exceptions.dart';
-import '../../../../core/errors/failures.dart';
-import '../../domain/entities/user_entity.dart';
-import '../../domain/repositories/login_repository.dart';
-import '../datasources/login_remote_datasource.dart';
-import '../models/user_model_mapper.dart';
+import 'package:qrscanner/core/appStorage/app_storage.dart';
+import 'package:qrscanner/core/appStorage/user_model.dart';
+import 'package:qrscanner/core/errors/exceptions.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/features/login/data/datasources/login_remote_datasource.dart';
+import 'package:qrscanner/features/login/data/models/user_model_mapper.dart';
+import 'package:qrscanner/features/login/domain/entities/user_entity.dart';
+import 'package:qrscanner/features/login/domain/repositories/login_repository.dart';
 
 /// Implementation of LoginRepository
 class LoginRepositoryImpl implements LoginRepository {
@@ -27,14 +26,14 @@ class LoginRepositoryImpl implements LoginRepository {
         phoneType: phoneType,
       );
 
-      final message = data['massage'] ?? 'login failed';
+      final message = (data['massage'] as String?) ?? 'login failed';
 
       if (data['status'] == 1) {
         try {
           final userModel = UserModel.fromJson(data);
           await AppStorage.cacheUserInfo(userModel);
           return Right(userModel.toEntity());
-        } catch (e) {
+        } on Object catch (_) {
           return const Left(
             ValidationFailure(message: 'Invalid user data received'),
           );

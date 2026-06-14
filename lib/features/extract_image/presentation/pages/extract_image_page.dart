@@ -1,17 +1,18 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/widgets/custom_button.dart';
-import '../../../../core/widgets/custom_text_field.dart';
-import '../../../../core/widgets/snack_bar.dart';
-import '../cubit/extract_image_cubit.dart';
-import '../cubit/extract_image_state.dart';
-import 'qr_camera_page.dart';
+import 'package:qrscanner/core/theme/app_colors.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
+import 'package:qrscanner/core/widgets/custom_button.dart';
+import 'package:qrscanner/core/widgets/custom_text_field.dart';
+import 'package:qrscanner/core/widgets/snack_bar.dart';
+import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_cubit.dart';
+import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_state.dart';
+import 'package:qrscanner/features/extract_image/presentation/pages/qr_camera_page.dart';
 
 class ExtractImagePage extends StatefulWidget {
   const ExtractImagePage({required this.categoryId, super.key, this.scanType});
@@ -47,7 +48,7 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
     final capturedPath = capturedFile.path.replaceFirst('file://', '');
     final sourceFile = File(capturedPath);
 
-    if (!await sourceFile.exists()) {
+    if (!sourceFile.existsSync()) {
       if (context.mounted) {
         showSnackBar('Failed to save image', color: Colors.red);
       }
@@ -62,7 +63,11 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (_) => GetIt.I<ExtractImageCubit>()..loadHistoryCount(),
+    create: (_) {
+      final cubit = GetIt.I<ExtractImageCubit>();
+      unawaited(cubit.loadHistoryCount());
+      return cubit;
+    },
     child: BlocListener<ExtractImageCubit, ExtractImageState>(
       listener: (context, state) {
         if (state is ScanResultLoaded) {

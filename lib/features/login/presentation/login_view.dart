@@ -1,15 +1,16 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
-import '../../../core/router/router.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/custom_button.dart';
-import '../../../core/widgets/custom_text_field.dart';
-import '../../card_scanner/card_scanner_view.dart';
-import 'cubit/login_cubit.dart';
-import 'cubit/login_state.dart';
+import 'package:qrscanner/core/router/router.dart';
+import 'package:qrscanner/core/theme/app_colors.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
+import 'package:qrscanner/core/widgets/custom_button.dart';
+import 'package:qrscanner/core/widgets/custom_text_field.dart';
+import 'package:qrscanner/features/card_scanner/card_scanner_view.dart';
+import 'package:qrscanner/features/login/presentation/cubit/login_cubit.dart';
+import 'package:qrscanner/features/login/presentation/cubit/login_state.dart';
 
 class LogInView extends StatelessWidget {
   const LogInView({super.key});
@@ -23,7 +24,7 @@ class LogInView extends StatelessWidget {
         child: BlocConsumer<LoginCubit, LoginState>(
           listener: (context, state) {
             if (state is LoginSuccess) {
-              MagicRouter.navigateAndPopAll(const CardScannerView());
+              unawaited(MagicRouter.navigateAndPopAll(const CardScannerView()));
             }
           },
           builder: (context, state) {
@@ -175,10 +176,10 @@ class LogInView extends StatelessWidget {
     ),
   );
 
-  void _login(BuildContext context) {
+  void _login(BuildContext context) async {
     final cubit = LoginCubit.of(context);
     if (cubit.formKey.currentState!.validate()) {
-      cubit.login();
+      await cubit.login();
     }
   }
 }

@@ -2,12 +2,12 @@ class MyScansModel {
   MyScansModel({this.status, this.massage, this.data});
 
   MyScansModel.fromJson(Map<String, dynamic> json) {
-    status = json['status'];
-    massage = json['massage'];
+    status = json['status'] as int?;
+    massage = json['massage'] as String?;
     if (json['data'] != null) {
       data = <SavedData>[];
-      for (var v in (json['data'] as List)) {
-        data!.add(SavedData.fromJson(v));
+      for (final v in (json['data'] as List)) {
+        data!.add(SavedData.fromJson(v as Map<String, dynamic>));
       }
     }
   }
@@ -16,7 +16,7 @@ class MyScansModel {
   List<SavedData>? data;
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['status'] = status;
     data['massage'] = massage;
     if (this.data != null) {
@@ -40,15 +40,15 @@ class SavedData {
   });
 
   SavedData.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    pin = json['pin'];
-    serial = json['serial'];
-    image = json['image'];
-    phoneType = json['phone_type'];
-    userId = json['user_id'];
-    categoryId = json['category_id'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
+    id = json['id'] as int?;
+    pin = json['pin'] as String?;
+    serial = json['serial'] as String?;
+    image = json['image'] as String?;
+    phoneType = json['phone_type'] as String?;
+    userId = json['user_id'] as String?;
+    categoryId = json['category_id'] as String?;
+    createdAt = json['created_at'] as String?;
+    updatedAt = json['updated_at'] as String?;
   }
   int? id;
   String? pin;
@@ -61,7 +61,7 @@ class SavedData {
   String? updatedAt;
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['id'] = id;
     data['pin'] = pin;
     data['serial'] = serial;

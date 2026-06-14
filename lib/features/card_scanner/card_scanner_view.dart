@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../core/dioHelper/dio_helper.dart';
-import '../../core/router/router.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../card_type/presentation/card_type_view.dart';
-import '../saved_data/presentation/saved_data_view.dart';
+import 'package:qrscanner/core/dioHelper/dio_helper.dart';
+import 'package:qrscanner/core/router/router.dart';
+import 'package:qrscanner/core/theme/app_colors.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
+import 'package:qrscanner/features/card_type/presentation/card_type_view.dart';
+import 'package:qrscanner/features/saved_data/presentation/saved_data_view.dart';
 
 class CardScannerView extends StatelessWidget {
   const CardScannerView({super.key});
@@ -152,8 +152,8 @@ class CardScannerView extends StatelessWidget {
           ],
         ),
       );
-      if (confirm == true && context.mounted) {
-        await DioHelper.post('delete', true, body: {});
+      if ((confirm ?? false) && context.mounted) {
+        await DioHelper.post('delete', isAuth: true, body: {});
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

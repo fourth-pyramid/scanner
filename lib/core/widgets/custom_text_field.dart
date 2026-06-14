@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
+import 'package:qrscanner/core/theme/app_colors.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
 
 class CustomTextField extends StatefulWidget {
   const CustomTextField({
@@ -29,7 +29,7 @@ class CustomTextField extends StatefulWidget {
   final String? labelText;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
-  final Function(String)? onChanged;
+  final void Function(String)? onChanged;
   final VoidCallback? onTap;
 
   final bool secure;

@@ -1,12 +1,11 @@
 import 'package:dartz/dartz.dart';
-
-import '../../../../core/appStorage/my_scans_model.dart';
-import '../../../../core/errors/exceptions.dart';
-import '../../../../core/errors/failures.dart';
-import '../../domain/entities/saved_scan_entity.dart';
-import '../../domain/repositories/saved_data_repository.dart';
-import '../datasources/saved_data_remote_datasource.dart';
-import '../models/saved_scan_model_mapper.dart';
+import 'package:qrscanner/core/appStorage/my_scans_model.dart';
+import 'package:qrscanner/core/errors/exceptions.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/features/saved_data/data/datasources/saved_data_remote_datasource.dart';
+import 'package:qrscanner/features/saved_data/data/models/saved_scan_model_mapper.dart';
+import 'package:qrscanner/features/saved_data/domain/entities/saved_scan_entity.dart';
+import 'package:qrscanner/features/saved_data/domain/repositories/saved_data_repository.dart';
 
 /// Implementation of SavedDataRepository
 class SavedDataRepositoryImpl implements SavedDataRepository {

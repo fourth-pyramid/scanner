@@ -12,7 +12,7 @@ class TextIsolateHelper {
       // Run extraction in isolate using compute
       final result = await compute(_extractNumbers, text);
       return result;
-    } catch (e) {
+    } on Object catch (_) {
       return {'pin': null, 'serial': null};
     }
   }
@@ -22,20 +22,20 @@ class TextIsolateHelper {
     try {
       // Normalize Arabic digits and keep only numeric candidates.
       final normalizedText = _normalizeDigits(text);
-      final RegExp regExp = RegExp(r'[0-9A-Za-z](?:[ \t\-]*[0-9A-Za-z]){8,}');
-      final Iterable<RegExpMatch> matches = regExp.allMatches(normalizedText);
+      final regExp = RegExp(r'[0-9A-Za-z](?:[ \t\-]*[0-9A-Za-z]){8,}');
+      final matches = regExp.allMatches(normalizedText);
 
-      final List<String> candidates = <String>[];
+      final candidates = <String>[];
       for (final match in matches) {
-        final String rawValue = match.group(0)!;
-        final String cleanValue = _normalizePotentialDigits(rawValue);
+        final rawValue = match.group(0)!;
+        final cleanValue = _normalizePotentialDigits(rawValue);
         if (cleanValue.length >= 10 && cleanValue.length <= 16) {
           candidates.add(cleanValue);
         }
       }
 
       // Try strict PIN pattern first: 4-3-4-3 (with optional separators)
-      final String? strictPin = _extractStrictPinPattern(normalizedText);
+      final strictPin = _extractStrictPinPattern(normalizedText);
       if (strictPin != null) {
         candidates.insert(0, strictPin);
       }
@@ -65,7 +65,7 @@ class TextIsolateHelper {
       // PIN يجب أن يكون 14 رقم فقط (صيغة 4-3-4-3).
 
       return <String, String?>{'pin': foundPin, 'serial': foundSerial};
-    } catch (e) {
+    } on Object catch (_) {
       return {'pin': null, 'serial': null};
     }
   }

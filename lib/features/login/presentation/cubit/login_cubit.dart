@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../domain/usecases/login_usecase.dart';
-import 'login_state.dart';
+import 'package:qrscanner/features/login/domain/usecases/login_usecase.dart';
+import 'package:qrscanner/features/login/presentation/cubit/login_state.dart';
 
 /// Cubit for Login feature
 /// Only handles UI state and calls UseCases - no business logic

@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../repositories/settings_repository.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/core/usecases/usecase.dart';
+import 'package:qrscanner/features/settings/domain/repositories/settings_repository.dart';
 
 /// Use case for saving settings
 class SaveSettingsUseCase implements UseCase<Unit, SaveSettingsParams> {
@@ -11,7 +11,7 @@ class SaveSettingsUseCase implements UseCase<Unit, SaveSettingsParams> {
 
   @override
   Future<Either<Failure, Unit>> call(SaveSettingsParams params) async =>
-      await repository.saveBaseUrl(params.url);
+      repository.saveBaseUrl(params.url);
 }
 
 class SaveSettingsParams {

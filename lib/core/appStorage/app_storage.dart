@@ -1,10 +1,9 @@
 // ignore_for_file: avoid_classes_with_only_static_members
 
 import 'package:get_storage/get_storage.dart';
-
-import '../../features/login/presentation/login_view.dart';
-import '../router/router.dart';
-import 'user_model.dart';
+import 'package:qrscanner/core/appStorage/user_model.dart';
+import 'package:qrscanner/core/router/router.dart';
+import 'package:qrscanner/features/login/presentation/login_view.dart';
 
 abstract class AppStorage {
   static final GetStorage _box = GetStorage();
@@ -26,9 +25,12 @@ abstract class AppStorage {
     UserModel? profileModel;
     if (_box.hasData('user')) {
       try {
-        profileModel = UserModel.fromJson(_box.read('user'));
-        _cachedUserModel = profileModel; // Cache for next access
-      } catch (e) {
+        final rawUser = _box.read<Map<dynamic, dynamic>>('user');
+        if (rawUser != null) {
+          profileModel = UserModel.fromJson(rawUser.cast<String, dynamic>());
+          _cachedUserModel = profileModel; // Cache for next access
+        }
+      } on Object catch (_) {
         // Failed to parse user info
       }
     }
@@ -64,11 +66,11 @@ abstract class AppStorage {
 
   static bool get hasBaseUrl => _box.hasData('baseUrl');
 
-  static final productsDetails = <Map>[];
+  static final productsDetails = <Map<String, dynamic>>[];
 
   static Future<void> signOut() async {
     await _box.erase();
     _cachedUserModel = null; // Clear in-memory cache
-    MagicRouter.navigateAndPopAll(const LogInView());
+    await MagicRouter.navigateAndPopAll(const LogInView());
   }
 }

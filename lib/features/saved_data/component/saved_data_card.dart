@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../domain/entities/saved_scan_entity.dart';
+import 'package:qrscanner/core/theme/app_colors.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
+import 'package:qrscanner/features/saved_data/domain/entities/saved_scan_entity.dart';
 
 class SavedDataCard extends StatelessWidget {
   const SavedDataCard({super.key, this.savedData});

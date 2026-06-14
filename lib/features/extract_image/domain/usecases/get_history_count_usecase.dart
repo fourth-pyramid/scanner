@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/errors/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../repositories/extract_image_repository.dart';
+import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/core/usecases/usecase.dart';
+import 'package:qrscanner/features/extract_image/domain/repositories/extract_image_repository.dart';
 
 /// Use case for getting history count of saved cards
 class GetHistoryCountUseCase implements NoParamsUseCase<int> {
@@ -11,5 +11,5 @@ class GetHistoryCountUseCase implements NoParamsUseCase<int> {
 
   @override
   Future<Either<Failure, int>> call(NoParams params) async =>
-      await repository.getHistoryCount();
+      repository.getHistoryCount();
 }

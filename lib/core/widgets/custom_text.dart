@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_text_styles.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
 
 @immutable
 class CustomText extends StatelessWidget {

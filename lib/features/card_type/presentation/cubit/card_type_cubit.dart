@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/usecases/usecase.dart';
-import '../../domain/entities/category_entity.dart';
-import '../../domain/usecases/clear_data_usecase.dart';
-import '../../domain/usecases/get_categories_usecase.dart';
-import 'card_type_state.dart';
+import 'package:qrscanner/core/usecases/usecase.dart';
+import 'package:qrscanner/features/card_type/domain/entities/category_entity.dart';
+import 'package:qrscanner/features/card_type/domain/usecases/clear_data_usecase.dart';
+import 'package:qrscanner/features/card_type/domain/usecases/get_categories_usecase.dart';
+import 'package:qrscanner/features/card_type/presentation/cubit/card_type_state.dart';
 
 /// Cubit for CardType feature
 /// Only handles UI state and calls UseCases - no business logic
@@ -46,10 +46,10 @@ class CardTypeCubit extends Cubit<CardTypeState> {
         emit(CardTypeError(message: failure.message));
         return false;
       },
-      (_) {
+      (_) async {
         emit(CardTypeCleared());
         // Reload categories after clearing
-        getCategories();
+        await getCategories();
         return true;
       },
     );

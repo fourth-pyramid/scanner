@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../domain/entities/category_entity.dart';
+import 'package:qrscanner/features/card_type/domain/entities/category_entity.dart';
 
 /// States for CardTypeCubit
 abstract class CardTypeState extends Equatable {

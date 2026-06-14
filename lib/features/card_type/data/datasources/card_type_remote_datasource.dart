@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-import '../../../../core/dioHelper/dio_helper.dart';
-import '../../../../core/errors/exceptions.dart';
+import 'package:qrscanner/core/dioHelper/dio_helper.dart';
+import 'package:qrscanner/core/errors/exceptions.dart';
 
 /// Remote data source for card type feature
 abstract class CardTypeRemoteDataSource {
@@ -33,11 +33,11 @@ class CardTypeRemoteDataSourceImpl implements CardTypeRemoteDataSource {
   @override
   Future<void> clearData() async {
     try {
-      final response = await DioHelper.post('delete', true, body: {});
+      final response = await DioHelper.post('delete', isAuth: true, body: {});
       final data = response.data as Map<String, dynamic>;
 
       if (data['status'] != 1) {
-        final message = data['message'] ?? 'Unknown error';
+        final message = (data['message'] as String?) ?? 'Unknown error';
         throw ServerException(message: message);
       }
     } on DioException catch (e) {

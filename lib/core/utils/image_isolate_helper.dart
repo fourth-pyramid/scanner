@@ -14,7 +14,7 @@ class ImageIsolateHelper {
         targetWidth: targetWidth,
       );
       return await compute(_compressImage, params);
-    } catch (_) {
+    } on Object catch (_) {
       return null;
     }
   }
@@ -26,7 +26,7 @@ class ImageIsolateHelper {
       final result = await compute(_readImageDimensions, imagePath);
       if (result == null) return null;
       return (width: result['width']!, height: result['height']!);
-    } catch (_) {
+    } on Object catch (_) {
       return null;
     }
   }
@@ -44,7 +44,7 @@ class ImageIsolateHelper {
       });
       if (result == null) return null;
       return PreparedScanAssets.fromMap(result);
-    } catch (_) {
+    } on Object catch (_) {
       return null;
     }
   }
@@ -63,7 +63,7 @@ class ImageIsolateHelper {
       final tempFile = File(tempPath);
       await tempFile.writeAsBytes(compressedBytes);
       return tempFile;
-    } catch (_) {
+    } on Object catch (_) {
       return null;
     }
   }
@@ -74,7 +74,7 @@ class ImageIsolateHelper {
       final decodedImage = img.decodeImage(bytes);
       if (decodedImage == null) return null;
       return {'width': decodedImage.width, 'height': decodedImage.height};
-    } catch (_) {
+    } on Object catch (_) {
       return null;
     }
   }
@@ -128,7 +128,7 @@ class ImageIsolateHelper {
         pinVariantPaths: pinVariantPaths,
         serialVariantPaths: serialVariantPaths,
       ).toMap();
-    } catch (_) {
+    } on Object catch (_) {
       return null;
     }
   }

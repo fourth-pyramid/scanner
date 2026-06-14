@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
+import 'package:qrscanner/core/theme/app_colors.dart';
+import 'package:qrscanner/core/theme/app_text_styles.dart';
 
 class ServerTypeIndicator extends StatelessWidget {
   const ServerTypeIndicator({required this.text, super.key});
@@ -14,13 +14,13 @@ class ServerTypeIndicator extends StatelessWidget {
 
     final isIP = RegExp(r'^(\d{1,3}\.){3}\d{1,3}(:\d+)?$').hasMatch(text);
 
-    final Color borderColor = isIP ? colorSuccess : colorAccent;
-    final Color bgColor = isIP
+    final borderColor = isIP ? colorSuccess : colorAccent;
+    final bgColor = isIP
         ? colorSuccess.withAlpha(18)
         : colorAccent.withAlpha(18);
-    final IconData icon = isIP ? Icons.router_outlined : Icons.cloud_outlined;
-    final String label = isIP ? 'Local Server' : 'Production Server';
-    final String address = isIP ? 'http://$text' : 'https://$text';
+    final icon = isIP ? Icons.router_outlined : Icons.cloud_outlined;
+    final label = isIP ? 'Local Server' : 'Production Server';
+    final address = isIP ? 'http://$text' : 'https://$text';
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
