@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
@@ -23,6 +24,7 @@ class CustomTextField extends StatefulWidget {
     this.radius = 12,
     this.height = 16,
     this.keyboardType,
+    this.inputFormatters,
   });
 
   final String? hint;
@@ -45,6 +47,7 @@ class CustomTextField extends StatefulWidget {
   final double radius;
   final double height;
   final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -65,6 +68,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     readOnly: widget.isReadOnly,
     obscureText: _obscure,
     keyboardType: widget.keyboardType,
+    inputFormatters: widget.inputFormatters,
     maxLines: widget.secure ? 1 : widget.maxLines,
     maxLength: widget.maxLength,
     onChanged: widget.onChanged,

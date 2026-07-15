@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:network_info_plus/network_info_plus.dart';
+// ponytail: removed network_info_plus import
 
 import 'package:qrscanner/core/appStorage/app_storage.dart';
 import 'package:qrscanner/core/dioHelper/dio_helper.dart';
@@ -10,12 +10,11 @@ import 'package:qrscanner/core/errors/exceptions.dart';
 abstract class SettingsLocalDataSource {
   Future<String?> getBaseUrl();
   Future<void> saveBaseUrl(String url);
-  Future<String?> getWifiIP();
 }
 
 /// Implementation of local data source
 class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
-  final NetworkInfo _networkInfo = NetworkInfo();
+  // ponytail: removed NetworkInfo instantiation
 
   // Pre-compile regex for better performance
   static final RegExp _ipPattern = RegExp(r'^(\d{1,3}\.){3}\d{1,3}(:\d+)?$');
@@ -66,18 +65,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
     }
   }
 
-  @override
-  Future<String?> getWifiIP() async {
-    try {
-      final wifiIP = await _networkInfo.getWifiIP();
-      if (wifiIP != null && wifiIP.isNotEmpty) {
-        return '$wifiIP:8000';
-      }
-      return null;
-    } on Exception catch (e) {
-      throw NetworkException(message: e.toString());
-    }
-  }
+  // ponytail: removed getWifiIP implementation
 
   /// Detect Local IP (e.g., 192.168.x.x)
   bool _isIP(String text) => _ipPattern.hasMatch(text);

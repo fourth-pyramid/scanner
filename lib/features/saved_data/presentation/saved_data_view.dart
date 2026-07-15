@@ -1,8 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
 import 'package:qrscanner/core/widgets/custom_text_field.dart';
@@ -39,11 +39,8 @@ class SavedDataView extends StatelessWidget {
             final cubit = SavedDataCubit.of(context);
             final scans = cubit.scans;
 
-            if (state is SavedDataLoading ||
-                (state is SavedDataInitial && scans.isEmpty)) {
-              return const Center(
-                child: CircularProgressIndicator(color: colorPrimary),
-              );
+            if (state is SavedDataLoading || (state is SavedDataInitial && scans.isEmpty)) {
+              return const Center(child: CircularProgressIndicator(color: colorPrimary));
             }
 
             if (state is SavedDataError) {
@@ -61,10 +58,7 @@ class SavedDataView extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: colorSurface,
                       borderRadius: BorderRadius.circular(14),
@@ -73,21 +67,14 @@ class SavedDataView extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: colorPrimary.withAlpha(15),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             children: [
-                              const Icon(
-                                Icons.list_alt_rounded,
-                                size: 16,
-                                color: colorPrimary,
-                              ),
+                              const Icon(Icons.list_alt_rounded, size: 16, color: colorPrimary),
                               const SizedBox(width: 6),
                               Text(
                                 '${scans.length} Records',
@@ -102,17 +89,9 @@ class SavedDataView extends StatelessWidget {
                         const Spacer(),
                         Row(
                           children: [
-                            _ActionChip(
-                              label: 'Excel',
-                              icon: Icons.table_chart_outlined,
-                              onTap: () {},
-                            ),
+                            _ActionChip(label: 'Excel', icon: Icons.table_chart_outlined, onTap: () {}),
                             const SizedBox(width: 8),
-                            _ActionChip(
-                              label: 'Email',
-                              icon: Icons.email_outlined,
-                              onTap: () {},
-                            ),
+                            _ActionChip(label: 'Email', icon: Icons.email_outlined, onTap: () {}),
                           ],
                         ),
                       ],
@@ -126,7 +105,7 @@ class SavedDataView extends StatelessWidget {
                   child: CustomTextField(
                     hint: 'Search by PIN or serial…',
                     prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                    onChanged: (value) => cubit.search(value),
+                    onChanged: cubit.search,
                   ),
                 ),
 
@@ -145,8 +124,7 @@ class SavedDataView extends StatelessWidget {
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                           physics: const BouncingScrollPhysics(),
                           itemCount: scans.length,
-                          itemBuilder: (context, index) =>
-                              SavedDataCard(savedData: scans[index]),
+                          itemBuilder: (context, index) => SavedDataCard(savedData: scans[index]),
                         ),
                 ),
               ],
@@ -159,11 +137,7 @@ class SavedDataView extends StatelessWidget {
 }
 
 class _ActionChip extends StatelessWidget {
-  const _ActionChip({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
+  const _ActionChip({required this.label, required this.icon, required this.onTap});
   final String label;
   final IconData icon;
   final VoidCallback onTap;
@@ -173,19 +147,13 @@ class _ActionChip extends StatelessWidget {
     onTap: onTap,
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: colorPrimary,
-        borderRadius: BorderRadius.circular(20),
-      ),
+      decoration: BoxDecoration(color: colorPrimary, borderRadius: BorderRadius.circular(20)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: Colors.white),
           const SizedBox(width: 5),
-          Text(
-            label,
-            style: AppTextStyles.labelSmall.copyWith(color: Colors.white),
-          ),
+          Text(label, style: AppTextStyles.labelSmall.copyWith(color: Colors.white)),
         ],
       ),
     ),
@@ -193,12 +161,7 @@ class _ActionChip extends StatelessWidget {
 }
 
 class _EmptyOrErrorState extends StatelessWidget {
-  const _EmptyOrErrorState({
-    required this.icon,
-    required this.title,
-    required this.message,
-    this.isError = false,
-  });
+  const _EmptyOrErrorState({required this.icon, required this.title, required this.message, this.isError = false});
   final IconData icon;
   final String title;
   final String message;
@@ -215,10 +178,7 @@ class _EmptyOrErrorState extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: color.withAlpha(18),
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: color.withAlpha(18), shape: BoxShape.circle),
               child: Icon(icon, size: 48, color: color),
             ),
             const SizedBox(height: 20),
@@ -228,11 +188,7 @@ class _EmptyOrErrorState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            Text(
-              message,
-              style: AppTextStyles.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
+            Text(message, style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
           ],
         ),
       ),

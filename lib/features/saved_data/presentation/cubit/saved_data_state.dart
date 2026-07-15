@@ -33,3 +33,15 @@ class SavedDataError extends SavedDataState {
   @override
   List<Object?> get props => [message];
 }
+
+/// Empty state
+class SavedDataEmpty extends SavedDataState {}
+
+/// Refreshing state
+class SavedDataRefreshing extends SavedDataState {
+  const SavedDataRefreshing({required this.scans});
+  final List<SavedScanEntity> scans;
+
+  @override
+  List<Object?> get props => [scans];
+}

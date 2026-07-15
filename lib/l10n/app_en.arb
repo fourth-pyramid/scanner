@@ -1,0 +1,23 @@
+{
+  "@@locale": "en",
+  "appTitle": "Housing System",
+  "cardScannerManagement": "Card Scanner & Management",
+  "quickActions": "Quick Actions",
+  "scanCard": "Scan Card",
+  "startNewScan": "Start a new scan",
+  "savedScans": "Saved Scans",
+  "viewHistory": "View history",
+  "dataManagement": "Data Management",
+  "clearAllData": "Clear All Data",
+  "clearAllDataDesc": "Permanently delete all scan records",
+  "clearDataConfirmTitle": "Clear All Data",
+  "clearDataConfirmDesc": "Are you sure you want to clear all saved scan data? This cannot be undone.",
+  "cancel": "Cancel",
+  "clear": "Clear",
+  "allDataCleared": "All saved data has been cleared.",
+  "selectCardType": "Select Card Type",
+  "availableTypes": "Available Types",
+  "noCardTypesAvailable": "No card types available.\nPlease check your server connection.",
+  "errorConnecting": "Error connecting to server.",
+  "noInternet": "No internet connection available."
+}

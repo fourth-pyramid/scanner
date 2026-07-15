@@ -27,8 +27,6 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
   File? _currentImage;
   String? _currentPin;
   String? _currentSerial;
-  File? _pinCroppedImage;
-  File? _serialCroppedImage;
   bool _pinDetected = false;
   bool _serialDetected = false;
   int _historyCount = 0;
@@ -37,8 +35,6 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
   File? get currentImage => _currentImage;
   String? get currentPin => _currentPin;
   String? get currentSerial => _currentSerial;
-  File? get pinCroppedImage => _pinCroppedImage;
-  File? get serialCroppedImage => _serialCroppedImage;
   bool get pinDetected => _pinDetected;
   bool get serialDetected => _serialDetected;
   int get historyCount => _historyCount;
@@ -73,8 +69,6 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
           ScanResultLoaded(
             pin: cardData.pin,
             serial: cardData.serial,
-            pinCroppedImage: cardData.pinCroppedImage,
-            serialCroppedImage: cardData.serialCroppedImage,
             pinDetected: cardData.pinDetected,
             serialDetected: cardData.serialDetected,
           ),
@@ -148,8 +142,6 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
   void _resetExtractionData() {
     _currentPin = null;
     _currentSerial = null;
-    _pinCroppedImage = null;
-    _serialCroppedImage = null;
     _pinDetected = false;
     _serialDetected = false;
   }
@@ -158,8 +150,6 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
   void _applyCardData(CardData cardData) {
     _currentPin = cardData.pin;
     _currentSerial = cardData.serial;
-    _pinCroppedImage = cardData.pinCroppedImage;
-    _serialCroppedImage = cardData.serialCroppedImage;
     _pinDetected = cardData.pinDetected;
     _serialDetected = cardData.serialDetected;
   }

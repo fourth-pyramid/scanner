@@ -10,6 +10,5 @@ abstract class SettingsRepository {
   /// Save base URL
   Future<Either<Failure, Unit>> saveBaseUrl(String url);
   
-  /// Get WiFi IP
-  Future<Either<Failure, String?>> getWifiIP();
+  // ponytail: removed getWifiIP definition
 }

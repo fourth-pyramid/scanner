@@ -42,30 +42,14 @@ class HistoryCountLoaded extends ExtractImageState {
 
 /// Scan result with extracted data
 class ScanResultLoaded extends ExtractImageState {
-  const ScanResultLoaded({
-    this.pin,
-    this.serial,
-    this.pinCroppedImage,
-    this.serialCroppedImage,
-    this.pinDetected = false,
-    this.serialDetected = false,
-  });
+  const ScanResultLoaded({this.pin, this.serial, this.pinDetected = false, this.serialDetected = false});
   final String? pin;
   final String? serial;
-  final File? pinCroppedImage;
-  final File? serialCroppedImage;
   final bool pinDetected;
   final bool serialDetected;
 
   @override
-  List<Object?> get props => [
-    pin,
-    serial,
-    pinCroppedImage,
-    serialCroppedImage,
-    pinDetected,
-    serialDetected,
-  ];
+  List<Object?> get props => [pin, serial, pinDetected, serialDetected];
 }
 
 /// Scan error
@@ -79,3 +63,15 @@ class ScanError extends ExtractImageState {
 
 /// Submit loading state
 class SubmitLoading extends ExtractImageState {}
+
+/// Standard Loading state
+class ExtractImageLoading extends ExtractImageState {}
+
+/// Standard Success state
+class ExtractImageSuccess extends ExtractImageState {}
+
+/// Standard Empty state
+class ExtractImageEmpty extends ExtractImageState {}
+
+/// Standard Refreshing state
+class ExtractImageRefreshing extends ExtractImageState {}

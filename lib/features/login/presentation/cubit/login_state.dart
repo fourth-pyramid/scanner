@@ -32,3 +32,9 @@ class LoginError extends LoginState {
   @override
   List<Object?> get props => [message];
 }
+
+/// Empty state
+class LoginEmpty extends LoginState {}
+
+/// Refreshing state
+class LoginRefreshing extends LoginState {}

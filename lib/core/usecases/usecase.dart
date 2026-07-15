@@ -34,10 +34,7 @@ abstract class NoParamsUseCase<T> extends UseCase<T, NoParams> {
   Future<Either<Failure, T>> call(NoParams params);
 }
 
-/// Use case for stream-based operations
-abstract class StreamUseCase<T, Params> {
-  Stream<Either<Failure, T>> call(Params params);
-}
+// ponytail: removed unused StreamUseCase
 
 /// Parameter class for use cases that don't need parameters
 class NoParams {

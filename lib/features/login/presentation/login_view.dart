@@ -8,7 +8,7 @@ import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
 import 'package:qrscanner/core/widgets/custom_button.dart';
 import 'package:qrscanner/core/widgets/custom_text_field.dart';
-import 'package:qrscanner/features/card_scanner/card_scanner_view.dart';
+import 'package:qrscanner/features/card_scanner/presentation/pages/card_scanner_page.dart';
 import 'package:qrscanner/features/login/presentation/cubit/login_cubit.dart';
 import 'package:qrscanner/features/login/presentation/cubit/login_state.dart';
 
@@ -24,7 +24,7 @@ class LogInView extends StatelessWidget {
         child: BlocConsumer<LoginCubit, LoginState>(
           listener: (context, state) {
             if (state is LoginSuccess) {
-              unawaited(MagicRouter.navigateAndPopAll(const CardScannerView()));
+              unawaited(MagicRouter.navigateAndPopAll(const CardScannerPage()));
             }
           },
           builder: (context, state) {

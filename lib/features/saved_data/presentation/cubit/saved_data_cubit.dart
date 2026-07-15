@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:qrscanner/core/usecases/usecase.dart';
 import 'package:qrscanner/features/saved_data/domain/entities/saved_scan_entity.dart';
 import 'package:qrscanner/features/saved_data/domain/usecases/get_saved_scans_usecase.dart';
@@ -9,8 +8,7 @@ import 'package:qrscanner/features/saved_data/presentation/cubit/saved_data_stat
 /// Cubit for SavedData feature
 /// Only handles UI state and calls UseCases - no business logic
 class SavedDataCubit extends Cubit<SavedDataState> {
-  SavedDataCubit({required this.getSavedScansUseCase})
-    : super(SavedDataInitial());
+  SavedDataCubit({required this.getSavedScansUseCase}) : super(SavedDataInitial());
   final GetSavedScansUseCase getSavedScansUseCase;
 
   List<SavedScanEntity> _allScans = [];
@@ -19,10 +17,13 @@ class SavedDataCubit extends Cubit<SavedDataState> {
   List<SavedScanEntity> get scans {
     if (_searchQuery.isEmpty) return _allScans;
     final query = _searchQuery.toLowerCase();
-    return _allScans.where((scan) {
-      return (scan.pin?.toLowerCase().contains(query) ?? false) ||
-             (scan.serial?.toLowerCase().contains(query) ?? false);
-    }).toList();
+    return _allScans
+        .where(
+          (scan) =>
+              (scan.pin?.toLowerCase().contains(query) ?? false) ||
+              (scan.serial?.toLowerCase().contains(query) ?? false),
+        )
+        .toList();
   }
 
   /// Load all saved scans
@@ -31,9 +32,7 @@ class SavedDataCubit extends Cubit<SavedDataState> {
 
     final result = await getSavedScansUseCase(NoParams());
 
-    result.fold((failure) => emit(SavedDataError(message: failure.message)), (
-      scans,
-    ) {
+    result.fold((failure) => emit(SavedDataError(message: failure.message)), (scans) {
       _allScans = scans;
       emit(SavedDataSuccess(scans: this.scans));
     });
@@ -46,6 +45,5 @@ class SavedDataCubit extends Cubit<SavedDataState> {
   }
 
   /// Static method to get cubit from context
-  static SavedDataCubit of(BuildContext context) =>
-      BlocProvider.of<SavedDataCubit>(context);
+  static SavedDataCubit of(BuildContext context) => BlocProvider.of<SavedDataCubit>(context);
 }

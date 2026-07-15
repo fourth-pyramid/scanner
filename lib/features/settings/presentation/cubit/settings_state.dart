@@ -23,14 +23,7 @@ class SettingsLoaded extends SettingsState {
 /// Settings saved state
 class SettingsSaved extends SettingsState {}
 
-/// WiFi IP detected state
-class SettingsWifiIpDetected extends SettingsState {
-  const SettingsWifiIpDetected({required this.ip});
-  final String ip;
-
-  @override
-  List<Object?> get props => [ip];
-}
+// ponytail: removed SettingsWifiIpDetected state
 
 /// Error state
 class SettingsError extends SettingsState {
@@ -40,3 +33,9 @@ class SettingsError extends SettingsState {
   @override
   List<Object?> get props => [message];
 }
+
+/// Empty state
+class SettingsEmpty extends SettingsState {}
+
+/// Refreshing state
+class SettingsRefreshing extends SettingsState {}
