@@ -30,6 +30,10 @@ class _QrCameraPageState extends State<QrCameraPage> {
   String? _error;
 
   final GlobalKey _previewContainerKey = GlobalKey();
+  double? _previewWidth;
+  double? _previewHeight;
+  double? _previewDx;
+  double? _previewDy;
 
   @override
   void initState() {
@@ -64,7 +68,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
 
       final controller = CameraController(
         camera,
-        ResolutionPreset.ultraHigh,
+        ResolutionPreset.high,
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.jpeg,
       );
@@ -88,6 +92,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
         _controller = controller;
         _isLoading = false;
       });
+      WidgetsBinding.instance.addPostFrameCallback((_) => _cachePreviewMetrics());
     } on Object catch (e) {
       setState(() {
         _error = 'Failed to start camera: $e';
@@ -135,6 +140,18 @@ class _QrCameraPageState extends State<QrCameraPage> {
     }
   }
 
+  void _cachePreviewMetrics() {
+    final previewBox =
+        _previewContainerKey.currentContext?.findRenderObject() as RenderBox?;
+    if (previewBox == null || !previewBox.hasSize) return;
+
+    final offset = previewBox.localToGlobal(Offset.zero);
+    _previewWidth = previewBox.size.width;
+    _previewHeight = previewBox.size.height;
+    _previewDx = offset.dx;
+    _previewDy = offset.dy;
+  }
+
   Future<void> _captureImage() async {
     if (_isProcessing) return;
 
@@ -145,35 +162,37 @@ class _QrCameraPageState extends State<QrCameraPage> {
     setState(() {});
 
     try {
+      _cachePreviewMetrics();
+
+      final screenSize = MediaQuery.sizeOf(context);
+      final dirFuture = getApplicationDocumentsDirectory();
       final imageFile = await controller.takePicture();
-      final sourceFile = File(imageFile.path);
-      final imageBytes = await sourceFile.readAsBytes();
+      final imageBytes = await File(imageFile.path).readAsBytes();
 
-      final previewBox =
-          _previewContainerKey.currentContext?.findRenderObject() as RenderBox?;
-
-      final processed = await compute(_processImage, {
+      final processed = await compute(_cropCapturedImage, {
         'imageBytes': imageBytes,
-        'previewWidth': previewBox?.size.width,
-        'previewHeight': previewBox?.size.height,
-        'previewDx': previewBox?.localToGlobal(Offset.zero).dx,
-        'previewDy': previewBox?.localToGlobal(Offset.zero).dy,
-        'screenWidth': MediaQuery.of(context).size.width,
-        'screenHeight': MediaQuery.of(context).size.height,
+        'previewWidth': _previewWidth,
+        'previewHeight': _previewHeight,
+        'previewDx': _previewDx,
+        'previewDy': _previewDy,
+        'screenWidth': screenSize.width,
+        'screenHeight': screenSize.height,
       });
 
-      final dir = await getApplicationDocumentsDirectory();
+      final dir = await dirFuture;
       final savePath =
           '${dir.path}/qr_card_${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-      await File(savePath).writeAsBytes(processed, flush: true);
+      await File(savePath).writeAsBytes(processed);
 
       if (mounted) {
         Navigator.of(context).pop(XFile(savePath));
       }
     } on Object catch (_) {
-      _isProcessing = false;
-      setState(() {});
+      if (mounted) {
+        _isProcessing = false;
+        setState(() {});
+      }
     }
   }
 
@@ -283,7 +302,7 @@ class _QrCameraPageState extends State<QrCameraPage> {
                 Text(
                   _isFlashOn
                       ? 'Flash is on'
-                      : 'Tap the preview to focus before capture',
+                      : 'Tap capture when the card is in the frame',
                   style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
@@ -328,7 +347,8 @@ class _QrCameraPageState extends State<QrCameraPage> {
   }
 }
 
-List<int> _processImage(Map<String, dynamic> data) {
+/// Fast crop-only path. Heavy OCR enhancement runs later in the scan pipeline.
+List<int> _cropCapturedImage(Map<String, dynamic> data) {
   final raw = data['imageBytes'];
   final bytes = raw is Uint8List
       ? raw
@@ -394,30 +414,7 @@ List<int> _processImage(Map<String, dynamic> data) {
     );
   }
 
-  final enhanced = _enhanceForOcr(cropped);
-  return img.encodeJpg(enhanced, quality: 95);
-}
-
-img.Image _enhanceForOcr(img.Image image) {
-  var processed = image;
-
-  if (processed.width < 1400) {
-    processed = img.copyResize(
-      processed,
-      width: 1400,
-      interpolation: img.Interpolation.cubic,
-    );
-  }
-
-  processed = img.adjustColor(
-    processed,
-    contrast: 1.2,
-    brightness: 1.03,
-    saturation: 1.02,
-  );
-  processed = img.gaussianBlur(processed, radius: 1);
-
-  return processed;
+  return img.encodeJpg(cropped, quality: 88);
 }
 
 class _CardFrameOverlay extends StatelessWidget {

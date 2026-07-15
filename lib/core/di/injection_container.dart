@@ -1,6 +1,9 @@
 import 'package:get_it/get_it.dart';
 
 import 'package:qrscanner/core/dioHelper/dio_helper.dart';
+import 'package:qrscanner/core/ocr/captured_card_scanner_service.dart';
+import 'package:qrscanner/core/ocr/card_scan_ocr_service.dart';
+import 'package:qrscanner/core/ocr/ocr_engine_factory.dart';
 // Card Type Feature
 import 'package:qrscanner/features/card_type/data/datasources/card_type_remote_datasource.dart';
 import 'package:qrscanner/features/card_type/data/repositories/card_type_repository_impl.dart';
@@ -57,19 +60,29 @@ Future<void> initDependencies() async {
 /// Initialize core layer dependencies
 void _initCore() {
   // External
-  getIt.registerLazySingleton(() => DioHelper);
+  getIt
+    ..registerLazySingleton(() => DioHelper)
+    ..registerLazySingleton(CapturedCardScannerService.new);
 }
 
 /// Initialize extract_image feature dependencies
 void _initExtractImageFeature() {
-  // Data Sources
   getIt
+    ..registerLazySingleton(
+      () => CardScanOcrService(
+        pinOcrEngine: OcrEngineFactory.createPinEngine(),
+        serialOcrEngine: OcrEngineFactory.createSerialEngine(),
+      ),
+    )
     ..registerLazySingleton<ExtractImageRemoteDataSource>(
       ExtractImageRemoteDataSourceImpl.new,
     )
-    // Repositories
     ..registerLazySingleton<ExtractImageRepository>(
-      () => ExtractImageRepositoryImpl(remoteDataSource: getIt()),
+      () => ExtractImageRepositoryImpl(
+        remoteDataSource: getIt(),
+        cardScanOcrService: getIt(),
+        capturedCardScannerService: getIt(),
+      ),
     )
     // Use Cases
     ..registerLazySingleton(() => ProcessImageUseCase(repository: getIt()))

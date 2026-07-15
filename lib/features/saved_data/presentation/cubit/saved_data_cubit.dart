@@ -13,9 +13,17 @@ class SavedDataCubit extends Cubit<SavedDataState> {
     : super(SavedDataInitial());
   final GetSavedScansUseCase getSavedScansUseCase;
 
-  List<SavedScanEntity> _scans = [];
+  List<SavedScanEntity> _allScans = [];
+  String _searchQuery = '';
 
-  List<SavedScanEntity> get scans => _scans;
+  List<SavedScanEntity> get scans {
+    if (_searchQuery.isEmpty) return _allScans;
+    final query = _searchQuery.toLowerCase();
+    return _allScans.where((scan) {
+      return (scan.pin?.toLowerCase().contains(query) ?? false) ||
+             (scan.serial?.toLowerCase().contains(query) ?? false);
+    }).toList();
+  }
 
   /// Load all saved scans
   Future<void> loadScans() async {
@@ -26,9 +34,15 @@ class SavedDataCubit extends Cubit<SavedDataState> {
     result.fold((failure) => emit(SavedDataError(message: failure.message)), (
       scans,
     ) {
-      _scans = scans;
-      emit(SavedDataSuccess(scans: scans));
+      _allScans = scans;
+      emit(SavedDataSuccess(scans: this.scans));
     });
+  }
+
+  /// Search scans by query
+  void search(String query) {
+    _searchQuery = query;
+    emit(SavedDataSuccess(scans: scans));
   }
 
   /// Static method to get cubit from context

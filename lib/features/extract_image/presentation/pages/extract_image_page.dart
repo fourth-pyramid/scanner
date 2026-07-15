@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
@@ -62,13 +61,7 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
   }
 
   @override
-  Widget build(BuildContext context) => BlocProvider(
-    create: (_) {
-      final cubit = GetIt.I<ExtractImageCubit>();
-      unawaited(cubit.loadHistoryCount());
-      return cubit;
-    },
-    child: BlocListener<ExtractImageCubit, ExtractImageState>(
+  Widget build(BuildContext context) => BlocListener<ExtractImageCubit, ExtractImageState>(
       listener: (context, state) {
         if (state is ScanResultLoaded) {
           _pinController.text = state.pin ?? '';
@@ -108,7 +101,6 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
           ),
         ),
       ),
-    ),
   );
 
   PreferredSizeWidget _buildAppBar() => AppBar(
@@ -167,7 +159,7 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Tap "Open Camera" to capture a card',
+                        'Tap "Capture Card" to photograph the card',
                         style: AppTextStyles.bodySmall,
                       ),
                     ],
@@ -189,7 +181,7 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
               color: Colors.white,
               size: 22,
             ),
-            text: isScanning ? '' : 'Open Camera',
+            text: isScanning ? '' : 'Capture Card',
             isLoading: isScanning,
             onPress: () => _captureImage(context),
           );
@@ -213,27 +205,6 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // PIN Cropped Image (above input)
-        BlocBuilder<ExtractImageCubit, ExtractImageState>(
-          buildWhen: (previous, current) =>
-              current is ScanResultLoaded || current is ExtractImageInitial,
-          builder: (context, state) {
-            if (state is ScanResultLoaded && state.pinCroppedImage != null) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildCroppedImagePreview(
-                    state.pinCroppedImage!,
-                    state.pinDetected,
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-
         // PIN
         Text(
           'Card PIN',
@@ -254,27 +225,6 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
         ),
 
         const SizedBox(height: 20),
-
-        // Serial Cropped Image (above input)
-        BlocBuilder<ExtractImageCubit, ExtractImageState>(
-          buildWhen: (previous, current) =>
-              current is ScanResultLoaded || current is ExtractImageInitial,
-          builder: (context, state) {
-            if (state is ScanResultLoaded && state.serialCroppedImage != null) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildCroppedImagePreview(
-                    state.serialCroppedImage!,
-                    state.serialDetected,
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
 
         // SERIAL
         Text(
@@ -393,51 +343,6 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
         },
       );
 
-  Widget _buildCroppedImagePreview(File croppedImage, bool detected) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Extracted',
-            style: AppTextStyles.labelSmall.copyWith(color: colorTextSecondary),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: detected ? Colors.green.shade100 : Colors.orange.shade100,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              detected ? 'Auto' : 'Template',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: detected
-                    ? Colors.green.shade800
-                    : Colors.orange.shade800,
-                fontWeight: FontWeight.w500,
-                fontSize: 10,
-              ),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 6),
-      Container(
-        height: 60,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: colorBorder),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(7),
-          child: Image.file(croppedImage, fit: BoxFit.contain),
-        ),
-      ),
-    ],
-  );
 }
 
 class _HistoryCountWidget extends StatelessWidget {

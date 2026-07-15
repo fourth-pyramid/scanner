@@ -28,9 +28,14 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
     try {
       final text = url.trim();
 
+      final previousUrl = AppStorage.getBaseUrl;
+
       if (text.isEmpty) {
         // Default to production if empty
         const baseUrl = 'https://bestscan.store';
+        if (previousUrl != baseUrl) {
+          await AppStorage.clearUserSession();
+        }
         await AppStorage.cacheBaseUrl(baseUrl);
         DioHelper.updateBaseUrl(baseUrl);
         return;
@@ -39,6 +44,9 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
       // Detect if user wrote IP -> Local
       if (_isIP(text)) {
         final baseUrl = 'http://$text';
+        if (previousUrl != baseUrl) {
+          await AppStorage.clearUserSession();
+        }
         await AppStorage.cacheBaseUrl(baseUrl);
         DioHelper.updateBaseUrl(baseUrl);
         return;
@@ -48,6 +56,9 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
       final cleaned = _cleanUrl(text);
       final baseUrl = 'https://$cleaned';
 
+      if (previousUrl != baseUrl) {
+        await AppStorage.clearUserSession();
+      }
       await AppStorage.cacheBaseUrl(baseUrl);
       DioHelper.updateBaseUrl(baseUrl);
     } on Exception catch (e) {

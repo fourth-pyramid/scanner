@@ -40,6 +40,16 @@ abstract class AppStorage {
 
   static bool get isLogged => getUserInfo != null;
 
+  static bool get hasValidSession {
+    final token = getToken;
+    return hasBaseUrl && token != null && token.isNotEmpty;
+  }
+
+  static Future<void> clearUserSession() async {
+    await _box.remove('user');
+    _cachedUserModel = null;
+  }
+
   static Future<void> cacheUserInfo(UserModel userModel) async {
     await _box.write('user', userModel.toJson());
     _cachedUserModel = userModel; // Update in-memory cache

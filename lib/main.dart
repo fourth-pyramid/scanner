@@ -1,15 +1,14 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:qrscanner/core/appStorage/app_storage.dart';
 import 'package:qrscanner/core/di/injection_container.dart';
 import 'package:qrscanner/core/dioHelper/dio_helper.dart';
+import 'package:qrscanner/core/router/app_startup.dart';
 import 'package:qrscanner/core/router/router.dart';
 import 'package:qrscanner/core/theme/app_theme.dart';
 import 'package:qrscanner/features/app_disabled_view.dart';
-import 'package:qrscanner/features/settings/presentation/settings_view.dart';
 import 'package:qrscanner/firebase_options.dart';
 
 class MyHttpOverrides extends HttpOverrides {
@@ -98,7 +97,7 @@ class MyApp extends StatelessWidget {
 
       // App enabled
       return MaterialApp(
-        home: const SettingsView(),
+        home: AppStartup.resolveInitialScreen(),
         onGenerateRoute: onGenerateRoute,
         debugShowCheckedModeBanner: false,
         navigatorKey: navigatorKey,

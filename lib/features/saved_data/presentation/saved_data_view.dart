@@ -55,15 +55,6 @@ class SavedDataView extends StatelessWidget {
               );
             }
 
-            if (scans.isEmpty) {
-              return const _EmptyOrErrorState(
-                icon: Icons.inbox_outlined,
-                title: 'No Scans Yet',
-                message:
-                    "You don't have any saved scans yet.\nStart scanning a card!",
-              );
-            }
-
             return Column(
               children: [
                 // ─── Stats Bar ───
@@ -130,23 +121,33 @@ class SavedDataView extends StatelessWidget {
                 ),
 
                 // ─── Search ───
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 12, 20, 8),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
                   child: CustomTextField(
                     hint: 'Search by PIN or serial…',
-                    prefixIcon: Icon(Icons.search_rounded, size: 20),
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                    onChanged: (value) => cubit.search(value),
                   ),
                 ),
 
                 // ─── List ───
                 Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: scans.length,
-                    itemBuilder: (context, index) =>
-                        SavedDataCard(savedData: scans[index]),
-                  ),
+                  child: scans.isEmpty
+                      ? const SingleChildScrollView(
+                          child: _EmptyOrErrorState(
+                            icon: Icons.inbox_outlined,
+                            title: 'No Scans Found',
+                            message:
+                                "You don't have any scans matching this search, or you haven't scanned anything yet.",
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: scans.length,
+                          itemBuilder: (context, index) =>
+                              SavedDataCard(savedData: scans[index]),
+                        ),
                 ),
               ],
             );

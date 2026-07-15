@@ -38,8 +38,6 @@ android {
         versionName = flutter.versionName
 
         multiDexEnabled = true
-
-
     }
 
     signingConfigs {
@@ -71,12 +69,17 @@ android {
     buildTypes {
         getByName("release") {
             val releaseSigning = signingConfigs.getByName("release")
-            if (releaseSigning.storeFile != null) {
-                signingConfig = releaseSigning
+            signingConfig = if (releaseSigning.storeFile != null) {
+                releaseSigning
+            } else {
+                // Builds a testable release APK without key.properties.
+                // For Play Store, create android/key.properties (see key.properties.example).
+                signingConfigs.getByName("debug")
             }
 
             isMinifyEnabled = true
             isShrinkResources = true
+            isDebuggable = false
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

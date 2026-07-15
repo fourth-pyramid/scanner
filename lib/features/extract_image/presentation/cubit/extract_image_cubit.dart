@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -46,37 +47,40 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
   void setImage(File image) {
     _currentImage = image;
     _resetExtractionData();
-    emit(ImagePickedSuccess(image: image));
+    _safeEmit(ImagePickedSuccess(image: image));
   }
 
   /// Process the current image and extract PIN/SERIAL
   Future<void> processImage() async {
     if (_currentImage == null) {
-      emit(const ScanError(message: 'No image selected'));
+      _safeEmit(const ScanError(message: 'No image selected'));
       return;
     }
 
-    emit(Scanning());
+    _safeEmit(Scanning());
 
     final result = await processImageUseCase(
       ProcessImageParams(imageFile: _currentImage!),
     );
 
-    result.fold((failure) => emit(ScanError(message: failure.message)), (
-      cardData,
-    ) {
-      _applyCardData(cardData);
-      emit(
-        ScanResultLoaded(
-          pin: cardData.pin,
-          serial: cardData.serial,
-          pinCroppedImage: cardData.pinCroppedImage,
-          serialCroppedImage: cardData.serialCroppedImage,
-          pinDetected: cardData.pinDetected,
-          serialDetected: cardData.serialDetected,
-        ),
-      );
-    });
+    if (isClosed) return;
+
+    result.fold(
+      (failure) => _safeEmit(ScanError(message: failure.message)),
+      (cardData) {
+        _applyCardData(cardData);
+        _safeEmit(
+          ScanResultLoaded(
+            pin: cardData.pin,
+            serial: cardData.serial,
+            pinCroppedImage: cardData.pinCroppedImage,
+            serialCroppedImage: cardData.serialCroppedImage,
+            pinDetected: cardData.pinDetected,
+            serialDetected: cardData.serialDetected,
+          ),
+        );
+      },
+    );
   }
 
   /// Submit scan data to server
@@ -85,11 +89,11 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
     required int categoryId,
   }) async {
     if (_currentPin == null || _currentSerial == null) {
-      emit(const ScanError(message: 'PIN and Serial are required'));
+      _safeEmit(const ScanError(message: 'PIN and Serial are required'));
       return false;
     }
 
-    emit(SubmitLoading());
+    _safeEmit(SubmitLoading());
 
     final result = await submitScanUseCase(
       SubmitScanParams(
@@ -101,15 +105,16 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
       ),
     );
 
+    if (isClosed) return false;
+
     return result.fold(
       (failure) {
-        emit(ScanError(message: failure.message));
+        _safeEmit(ScanError(message: failure.message));
         return false;
       },
-      (_) async {
-        emit(ScanSuccess());
-        // Reload history count after successful submission
-        await loadHistoryCount();
+      (_) {
+        _safeEmit(ScanSuccess());
+        unawaited(loadHistoryCount());
         return true;
       },
     );
@@ -119,14 +124,15 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
   Future<void> loadHistoryCount() async {
     final result = await getHistoryCountUseCase(NoParams());
 
+    if (isClosed) return;
+
     result.fold(
       (failure) {
-        // Silently fail for history count
         _historyCount = 0;
       },
       (count) {
         _historyCount = count;
-        emit(HistoryCountLoaded(count: count));
+        _safeEmit(HistoryCountLoaded(count: count));
       },
     );
   }
@@ -135,7 +141,7 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
   void reset() {
     _currentImage = null;
     _resetExtractionData();
-    emit(ExtractImageInitial());
+    _safeEmit(ExtractImageInitial());
   }
 
   /// Clear extraction data but keep image
@@ -171,4 +177,8 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
   /// Static method to get cubit from context
   static ExtractImageCubit of(BuildContext context) =>
       BlocProvider.of<ExtractImageCubit>(context);
+
+  void _safeEmit(ExtractImageState state) {
+    if (!isClosed) emit(state);
+  }
 }

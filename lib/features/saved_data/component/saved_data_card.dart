@@ -49,15 +49,6 @@ class SavedDataCard extends StatelessWidget {
           ),
         ),
 
-        // ─── Edit icon ───
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: colorPrimary.withAlpha(10),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Icon(Icons.edit_outlined, size: 18, color: colorPrimary),
-        ),
       ],
     ),
   );

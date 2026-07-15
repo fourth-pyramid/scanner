@@ -24,3 +24,13 @@
 # Optional: for Firebase or ML model dependencies
 -keep class com.google.firebase.** { *; }
 -dontwarn com.google.firebase.**
+
+# Dio / OkHttp
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.** { *; }
+
+# Camera
+-keep class androidx.camera.** { *; }
+-dontwarn androidx.camera.**
