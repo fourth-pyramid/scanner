@@ -22,6 +22,7 @@
 - **Dio HTTP Client**
 - **Local Storage**
 - **Custom Navigation Router**
+- **AI Paddle OCR**
 
 ---
 
