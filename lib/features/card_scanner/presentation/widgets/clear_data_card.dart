@@ -1,10 +1,10 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
 import 'package:qrscanner/core/widgets/l10n_extension.dart';
-import 'package:qrscanner/features/card_scanner/presentation/cubit/card_scanner_cubit.dart';
+import 'package:qrscanner/features/card_scanner/presentation/bloc/card_scanner_bloc.dart';
 
 // ponytail: UI card that triggers clear all data dialog and event
 class ClearDataCard extends StatelessWidget {
@@ -41,7 +41,7 @@ class ClearDataCard extends StatelessWidget {
             ),
           );
           if ((confirm ?? false) && context.mounted) {
-            unawaited(CardScannerCubit.of(context).clearAllData());
+            context.read<CardScannerBloc>().add(const ClearAllDataEvent());
           }
         },
         child: Container(

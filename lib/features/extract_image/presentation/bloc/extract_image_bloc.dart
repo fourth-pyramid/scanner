@@ -1,24 +1,33 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:qrscanner/core/usecases/usecase.dart';
 import 'package:qrscanner/features/extract_image/domain/entities/card_data.dart';
 import 'package:qrscanner/features/extract_image/domain/usecases/get_history_count_usecase.dart';
 import 'package:qrscanner/features/extract_image/domain/usecases/process_image_usecase.dart';
 import 'package:qrscanner/features/extract_image/domain/usecases/submit_scan_usecase.dart';
-import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_state.dart';
 
-/// Cubit for ExtractImage feature
-/// Only handles UI state and calls UseCases - no business logic
-class ExtractImageCubit extends Cubit<ExtractImageState> {
-  ExtractImageCubit({
+part 'extract_image_event.dart';
+part 'extract_image_state.dart';
+
+// ponytail: bloc for extract image feature
+class ExtractImageBloc extends Bloc<ExtractImageEvent, ExtractImageState> {
+  ExtractImageBloc({
     required this.processImageUseCase,
     required this.submitScanUseCase,
     required this.getHistoryCountUseCase,
-  }) : super(ExtractImageInitial());
+  }) : super(ExtractImageInitial()) {
+    on<SetImageEvent>(_onSetImage);
+    on<ProcessImageEvent>(_onProcessImage);
+    on<SubmitScanEvent>(_onSubmitScan);
+    on<LoadHistoryCountEvent>(_onLoadHistoryCount);
+    on<ResetEvent>(_onReset);
+    on<UpdatePinEvent>(_onUpdatePin);
+    on<UpdateSerialEvent>(_onUpdateSerial);
+  }
+
   final ProcessImageUseCase processImageUseCase;
   final SubmitScanUseCase submitScanUseCase;
   final GetHistoryCountUseCase getHistoryCountUseCase;
@@ -39,21 +48,22 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
   bool get serialDetected => _serialDetected;
   int get historyCount => _historyCount;
 
-  /// Set captured image from camera
-  void setImage(File image) {
-    _currentImage = image;
+  void _onSetImage(SetImageEvent event, Emitter<ExtractImageState> emit) {
+    _currentImage = event.image;
     _resetExtractionData();
-    _safeEmit(ImagePickedSuccess(image: image));
+    _safeEmit(emit, ImagePickedSuccess(image: event.image));
   }
 
-  /// Process the current image and extract PIN/SERIAL
-  Future<void> processImage() async {
+  Future<void> _onProcessImage(
+    ProcessImageEvent event,
+    Emitter<ExtractImageState> emit,
+  ) async {
     if (_currentImage == null) {
-      _safeEmit(const ScanError(message: 'No image selected'));
+      _safeEmit(emit, const ScanError(message: 'No image selected'));
       return;
     }
 
-    _safeEmit(Scanning());
+    _safeEmit(emit, Scanning());
 
     final result = await processImageUseCase(
       ProcessImageParams(imageFile: _currentImage!),
@@ -62,10 +72,11 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
     if (isClosed) return;
 
     result.fold(
-      (failure) => _safeEmit(ScanError(message: failure.message)),
+      (failure) => _safeEmit(emit, ScanError(message: failure.message)),
       (cardData) {
         _applyCardData(cardData);
         _safeEmit(
+          emit,
           ScanResultLoaded(
             pin: cardData.pin,
             serial: cardData.serial,
@@ -77,45 +88,56 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
     );
   }
 
-  /// Submit scan data to server
-  Future<bool> submitScan({
-    required String phoneType,
-    required int categoryId,
-  }) async {
+  Future<void> _onSubmitScan(
+    SubmitScanEvent event,
+    Emitter<ExtractImageState> emit,
+  ) async {
     if (_currentPin == null || _currentSerial == null) {
-      _safeEmit(const ScanError(message: 'PIN and Serial are required'));
-      return false;
+      _safeEmit(emit, const ScanError(message: 'PIN and Serial are required'));
+      return;
     }
 
-    _safeEmit(SubmitLoading());
+    _safeEmit(emit, SubmitLoading());
 
     final result = await submitScanUseCase(
       SubmitScanParams(
         pin: _currentPin!,
         serial: _currentSerial!,
-        phoneType: phoneType,
-        categoryId: categoryId,
+        phoneType: event.phoneType,
+        categoryId: event.categoryId,
         image: _currentImage,
       ),
     );
 
-    if (isClosed) return false;
+    if (isClosed) return;
 
-    return result.fold(
-      (failure) {
-        _safeEmit(ScanError(message: failure.message));
-        return false;
+    await result.fold(
+      (failure) async {
+        _safeEmit(emit, ScanError(message: failure.message));
       },
-      (_) {
-        _safeEmit(ScanSuccess());
-        unawaited(loadHistoryCount());
-        return true;
+      (_) async {
+        _safeEmit(emit, ScanSuccess());
+        // Load history count
+        final historyResult = await getHistoryCountUseCase(NoParams());
+        if (!isClosed) {
+          historyResult.fold(
+            (failure) {
+              _historyCount = 0;
+            },
+            (count) {
+              _historyCount = count;
+              _safeEmit(emit, HistoryCountLoaded(count: count));
+            },
+          );
+        }
       },
     );
   }
 
-  /// Load history count from server
-  Future<void> loadHistoryCount() async {
+  Future<void> _onLoadHistoryCount(
+    LoadHistoryCountEvent event,
+    Emitter<ExtractImageState> emit,
+  ) async {
     final result = await getHistoryCountUseCase(NoParams());
 
     if (isClosed) return;
@@ -126,19 +148,25 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
       },
       (count) {
         _historyCount = count;
-        _safeEmit(HistoryCountLoaded(count: count));
+        _safeEmit(emit, HistoryCountLoaded(count: count));
       },
     );
   }
 
-  /// Reset all state
-  void reset() {
+  void _onReset(ResetEvent event, Emitter<ExtractImageState> emit) {
     _currentImage = null;
     _resetExtractionData();
-    _safeEmit(ExtractImageInitial());
+    _safeEmit(emit, ExtractImageInitial());
   }
 
-  /// Clear extraction data but keep image
+  void _onUpdatePin(UpdatePinEvent event, Emitter<ExtractImageState> emit) {
+    _currentPin = event.pin;
+  }
+
+  void _onUpdateSerial(UpdateSerialEvent event, Emitter<ExtractImageState> emit) {
+    _currentSerial = event.serial;
+  }
+
   void _resetExtractionData() {
     _currentPin = null;
     _currentSerial = null;
@@ -146,7 +174,6 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
     _serialDetected = false;
   }
 
-  /// Apply extracted card data to state
   void _applyCardData(CardData cardData) {
     _currentPin = cardData.pin;
     _currentSerial = cardData.serial;
@@ -154,21 +181,7 @@ class ExtractImageCubit extends Cubit<ExtractImageState> {
     _serialDetected = cardData.serialDetected;
   }
 
-  /// Manual update PIN (for manual entry)
-  void updatePin(String pin) {
-    _currentPin = pin;
-  }
-
-  /// Manual update Serial (for manual entry)
-  void updateSerial(String serial) {
-    _currentSerial = serial;
-  }
-
-  /// Static method to get cubit from context
-  static ExtractImageCubit of(BuildContext context) =>
-      BlocProvider.of<ExtractImageCubit>(context);
-
-  void _safeEmit(ExtractImageState state) {
+  void _safeEmit(Emitter<ExtractImageState> emit, ExtractImageState state) {
     if (!isClosed) emit(state);
   }
 }

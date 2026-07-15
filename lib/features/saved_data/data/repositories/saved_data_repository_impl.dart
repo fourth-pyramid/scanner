@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
-import 'package:qrscanner/core/appStorage/my_scans_model.dart';
 import 'package:qrscanner/core/errors/exceptions.dart';
 import 'package:qrscanner/core/errors/failures.dart';
 import 'package:qrscanner/core/network/network_info.dart';
 import 'package:qrscanner/features/saved_data/data/datasources/saved_data_remote_datasource.dart';
+import 'package:qrscanner/features/saved_data/data/models/my_scans_model.dart';
 import 'package:qrscanner/features/saved_data/data/models/saved_scan_model_mapper.dart';
 import 'package:qrscanner/features/saved_data/domain/entities/saved_scan_entity.dart';
 import 'package:qrscanner/features/saved_data/domain/repositories/saved_data_repository.dart';

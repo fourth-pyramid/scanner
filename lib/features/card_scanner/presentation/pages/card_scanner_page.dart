@@ -8,8 +8,7 @@ import 'package:qrscanner/core/router/router.dart';
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
 import 'package:qrscanner/core/widgets/l10n_extension.dart';
-import 'package:qrscanner/features/card_scanner/presentation/cubit/card_scanner_cubit.dart';
-import 'package:qrscanner/features/card_scanner/presentation/cubit/card_scanner_state.dart';
+import 'package:qrscanner/features/card_scanner/presentation/bloc/card_scanner_bloc.dart';
 import 'package:qrscanner/features/card_scanner/presentation/widgets/action_card.dart';
 import 'package:qrscanner/features/card_scanner/presentation/widgets/clear_data_card.dart';
 import 'package:qrscanner/features/card_scanner/presentation/widgets/scanner_header.dart';
@@ -22,7 +21,7 @@ class CardScannerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-        create: (_) => getIt<CardScannerCubit>(),
+        create: (_) => getIt<CardScannerBloc>(),
         child: const _CardScannerView(),
       );
 }
@@ -32,7 +31,7 @@ class _CardScannerView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      BlocListener<CardScannerCubit, CardScannerState>(
+      BlocListener<CardScannerBloc, CardScannerState>(
         listener: (context, state) {
           if (state is CardScannerLoading) {
             unawaited(showDialog<void>(

@@ -9,19 +9,14 @@ import 'package:qrscanner/core/widgets/custom_button.dart';
 import 'package:qrscanner/core/widgets/custom_text_field.dart';
 import 'package:qrscanner/core/widgets/server_type_indicator.dart';
 import 'package:qrscanner/features/login/presentation/login_view.dart';
-import 'package:qrscanner/features/settings/presentation/cubit/settings_cubit.dart';
-import 'package:qrscanner/features/settings/presentation/cubit/settings_state.dart';
+import 'package:qrscanner/features/settings/presentation/bloc/settings_bloc.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (context) {
-      final cubit = GetIt.I<SettingsCubit>();
-      unawaited(cubit.loadSettings());
-      return cubit;
-    },
+    create: (context) => GetIt.I<SettingsBloc>()..add(const LoadSettingsEvent()),
     child: Scaffold(
       backgroundColor: colorBackground,
       appBar: AppBar(
@@ -39,7 +34,7 @@ class SettingsView extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: BlocConsumer<SettingsCubit, SettingsState>(
+        child: BlocConsumer<SettingsBloc, SettingsState>(
           listener: (context, state) {
             if (state is SettingsSaved) {
               unawaited(MagicRouter.navigateToReplacment(const LogInView()));
@@ -48,12 +43,12 @@ class SettingsView extends StatelessWidget {
           buildWhen: (previous, current) =>
               previous.runtimeType != current.runtimeType,
           builder: (context, state) {
-            final cubit = SettingsCubit.of(context);
+            final bloc = context.read<SettingsBloc>();
 
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Form(
-                key: cubit.formKey,
+                key: bloc.formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -119,14 +114,13 @@ class SettingsView extends StatelessWidget {
                           const SizedBox(height: 10),
                           CustomTextField(
                             hint: '192.168.x.x:8000 or domain.com',
-                            controller: cubit.ipController,
+                            controller: bloc.ipController,
                             prefixIcon: const Icon(
                               Icons.lan_outlined,
                               size: 20,
                             ),
-                            onChanged: (_) {
-                              // Trigger rebuild by notifying listeners
-                              // The ServerTypeIndicator will rebuild with new text
+                            onChanged: (val) {
+                              bloc.add(UpdateAddressEvent(val));
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -136,8 +130,11 @@ class SettingsView extends StatelessWidget {
                             },
                           ),
                           const SizedBox(height: 10),
-                          ServerTypeIndicator(
-                            text: cubit.ipController.text.trim(),
+                          BlocSelector<SettingsBloc, SettingsState, String>(
+                            selector: (state) => bloc.ipController.text.trim(),
+                            builder: (context, ipText) => ServerTypeIndicator(
+                              text: ipText,
+                            ),
                           ),
                         ],
                       ),
@@ -154,9 +151,9 @@ class SettingsView extends StatelessWidget {
                         color: Colors.white,
                         size: 20,
                       ),
-                      onPress: () async {
-                        if (cubit.formKey.currentState!.validate()) {
-                          await cubit.saveSettings();
+                      onPress: () {
+                        if (bloc.formKey.currentState!.validate()) {
+                          bloc.add(const SaveSettingsEvent());
                         }
                       },
                     ),

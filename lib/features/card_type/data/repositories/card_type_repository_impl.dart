@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
-import 'package:qrscanner/core/appStorage/get_categories_model.dart';
 import 'package:qrscanner/core/errors/exceptions.dart';
 import 'package:qrscanner/core/errors/failures.dart';
 import 'package:qrscanner/core/network/network_info.dart';
 import 'package:qrscanner/features/card_type/data/datasources/card_type_remote_datasource.dart';
 import 'package:qrscanner/features/card_type/data/models/category_model_mapper.dart';
+import 'package:qrscanner/features/card_type/data/models/get_categories_model.dart';
 import 'package:qrscanner/features/card_type/domain/entities/category_entity.dart';
 import 'package:qrscanner/features/card_type/domain/repositories/card_type_repository.dart';
 

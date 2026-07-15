@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
 import 'package:qrscanner/core/widgets/custom_text_field.dart';
-import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_cubit.dart';
+import 'package:qrscanner/features/extract_image/presentation/bloc/extract_image_bloc.dart';
 
 class FieldsCardWidget extends StatelessWidget {
   const FieldsCardWidget({
@@ -51,7 +51,7 @@ class FieldsCardWidget extends StatelessWidget {
           prefixIcon: const Icon(Icons.pin_outlined, size: 20),
           inputFormatters: [PinInputFormatter()],
           onChanged: (value) {
-            context.read<ExtractImageCubit>().updatePin(value);
+            context.read<ExtractImageBloc>().add(UpdatePinEvent(value));
           },
         ),
 
@@ -72,7 +72,7 @@ class FieldsCardWidget extends StatelessWidget {
           keyboardType: TextInputType.number,
           prefixIcon: const Icon(Icons.tag_outlined, size: 20),
           onChanged: (value) {
-            context.read<ExtractImageCubit>().updateSerial(value);
+            context.read<ExtractImageBloc>().add(UpdateSerialEvent(value));
           },
         ),
       ],

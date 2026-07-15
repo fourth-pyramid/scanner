@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:qrscanner/core/appStorage/app_storage.dart';
-import 'package:qrscanner/core/appStorage/user_model.dart';
 import 'package:qrscanner/core/errors/exceptions.dart';
 import 'package:qrscanner/core/errors/failures.dart';
 import 'package:qrscanner/core/network/network_info.dart';
 import 'package:qrscanner/features/login/data/datasources/login_remote_datasource.dart';
+import 'package:qrscanner/features/login/data/models/user_model.dart';
 import 'package:qrscanner/features/login/data/models/user_model_mapper.dart';
 import 'package:qrscanner/features/login/domain/entities/user_entity.dart';
 import 'package:qrscanner/features/login/domain/repositories/login_repository.dart';

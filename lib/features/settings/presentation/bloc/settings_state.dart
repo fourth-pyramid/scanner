@@ -1,6 +1,6 @@
-import 'package:equatable/equatable.dart';
+part of 'settings_bloc.dart';
 
-/// States for SettingsCubit
+// ponytail: standard 6 states for settings
 abstract class SettingsState extends Equatable {
   const SettingsState();
 
@@ -8,10 +8,8 @@ abstract class SettingsState extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Initial state
 class SettingsInitial extends SettingsState {}
 
-/// Settings loaded state
 class SettingsLoaded extends SettingsState {
   const SettingsLoaded({this.baseUrl});
   final String? baseUrl;
@@ -20,12 +18,8 @@ class SettingsLoaded extends SettingsState {
   List<Object?> get props => [baseUrl];
 }
 
-/// Settings saved state
 class SettingsSaved extends SettingsState {}
 
-// ponytail: removed SettingsWifiIpDetected state
-
-/// Error state
 class SettingsError extends SettingsState {
   const SettingsError({required this.message});
   final String message;
@@ -34,8 +28,6 @@ class SettingsError extends SettingsState {
   List<Object?> get props => [message];
 }
 
-/// Empty state
 class SettingsEmpty extends SettingsState {}
 
-/// Refreshing state
 class SettingsRefreshing extends SettingsState {}

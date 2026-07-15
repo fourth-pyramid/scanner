@@ -1,8 +1,6 @@
-import 'package:equatable/equatable.dart';
+part of 'card_type_bloc.dart';
 
-import 'package:qrscanner/features/card_type/domain/entities/category_entity.dart';
-
-/// States for CardTypeCubit
+// ponytail: standard 6 states for card type
 abstract class CardTypeState extends Equatable {
   const CardTypeState();
 
@@ -10,13 +8,10 @@ abstract class CardTypeState extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Initial state
 class CardTypeInitial extends CardTypeState {}
 
-/// Loading state
 class CardTypeLoading extends CardTypeState {}
 
-/// Success state with categories
 class CardTypeSuccess extends CardTypeState {
   const CardTypeSuccess({required this.categories});
   final List<CategoryEntity> categories;
@@ -25,7 +20,6 @@ class CardTypeSuccess extends CardTypeState {
   List<Object?> get props => [categories];
 }
 
-/// Error state
 class CardTypeError extends CardTypeState {
   const CardTypeError({required this.message});
   final String message;
@@ -34,10 +28,8 @@ class CardTypeError extends CardTypeState {
   List<Object?> get props => [message];
 }
 
-/// Empty state
 class CardTypeEmpty extends CardTypeState {}
 
-/// Refreshing state
 class CardTypeRefreshing extends CardTypeState {
   const CardTypeRefreshing({required this.categories});
   final List<CategoryEntity> categories;
