@@ -1,6 +1,6 @@
-import 'package:equatable/equatable.dart';
+part of 'login_bloc.dart';
 
-/// States for LoginCubit
+// ponytail: standard 6 states for login
 abstract class LoginState extends Equatable {
   const LoginState();
 
@@ -8,13 +8,10 @@ abstract class LoginState extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Initial state
 class LoginInitial extends LoginState {}
 
-/// Loading state
 class LoginLoading extends LoginState {}
 
-/// Success state with user data
 class LoginSuccess extends LoginState {
   const LoginSuccess({required this.token, this.userName});
   final String token;
@@ -24,7 +21,6 @@ class LoginSuccess extends LoginState {
   List<Object?> get props => [token, userName];
 }
 
-/// Error state
 class LoginError extends LoginState {
   const LoginError({required this.message});
   final String message;
@@ -33,8 +29,6 @@ class LoginError extends LoginState {
   List<Object?> get props => [message];
 }
 
-/// Empty state
 class LoginEmpty extends LoginState {}
 
-/// Refreshing state
 class LoginRefreshing extends LoginState {}

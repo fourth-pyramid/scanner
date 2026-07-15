@@ -1,8 +1,6 @@
-import 'package:equatable/equatable.dart';
+part of 'saved_data_bloc.dart';
 
-import 'package:qrscanner/features/saved_data/domain/entities/saved_scan_entity.dart';
-
-/// States for SavedDataCubit
+// ponytail: standard 6 states for saved data
 abstract class SavedDataState extends Equatable {
   const SavedDataState();
 
@@ -10,13 +8,10 @@ abstract class SavedDataState extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Initial state
 class SavedDataInitial extends SavedDataState {}
 
-/// Loading state
 class SavedDataLoading extends SavedDataState {}
 
-/// Success state with saved scans
 class SavedDataSuccess extends SavedDataState {
   const SavedDataSuccess({required this.scans});
   final List<SavedScanEntity> scans;
@@ -25,7 +20,6 @@ class SavedDataSuccess extends SavedDataState {
   List<Object?> get props => [scans];
 }
 
-/// Error state
 class SavedDataError extends SavedDataState {
   const SavedDataError({required this.message});
   final String message;
@@ -34,10 +28,8 @@ class SavedDataError extends SavedDataState {
   List<Object?> get props => [message];
 }
 
-/// Empty state
 class SavedDataEmpty extends SavedDataState {}
 
-/// Refreshing state
 class SavedDataRefreshing extends SavedDataState {
   const SavedDataRefreshing({required this.scans});
   final List<SavedScanEntity> scans;

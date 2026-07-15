@@ -1,8 +1,6 @@
-import 'dart:io';
+part of 'extract_image_bloc.dart';
 
-import 'package:equatable/equatable.dart';
-
-/// States for ExtractImageCubit
+// ponytail: states for ExtractImageBloc
 abstract class ExtractImageState extends Equatable {
   const ExtractImageState();
 
@@ -10,10 +8,8 @@ abstract class ExtractImageState extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Initial state
 class ExtractImageInitial extends ExtractImageState {}
 
-/// Image picked successfully
 class ImagePickedSuccess extends ExtractImageState {
   const ImagePickedSuccess({this.image});
   final File? image;
@@ -22,16 +18,12 @@ class ImagePickedSuccess extends ExtractImageState {
   List<Object?> get props => [image];
 }
 
-/// Image picking error
 class ImagePickedError extends ExtractImageState {}
 
-/// Scanning in progress
 class Scanning extends ExtractImageState {}
 
-/// Scan completed successfully
 class ScanSuccess extends ExtractImageState {}
 
-/// History count loaded
 class HistoryCountLoaded extends ExtractImageState {
   const HistoryCountLoaded({required this.count});
   final int count;
@@ -40,9 +32,13 @@ class HistoryCountLoaded extends ExtractImageState {
   List<Object?> get props => [count];
 }
 
-/// Scan result with extracted data
 class ScanResultLoaded extends ExtractImageState {
-  const ScanResultLoaded({this.pin, this.serial, this.pinDetected = false, this.serialDetected = false});
+  const ScanResultLoaded({
+    this.pin,
+    this.serial,
+    this.pinDetected = false,
+    this.serialDetected = false,
+  });
   final String? pin;
   final String? serial;
   final bool pinDetected;
@@ -52,7 +48,6 @@ class ScanResultLoaded extends ExtractImageState {
   List<Object?> get props => [pin, serial, pinDetected, serialDetected];
 }
 
-/// Scan error
 class ScanError extends ExtractImageState {
   const ScanError({this.message});
   final String? message;
@@ -61,17 +56,12 @@ class ScanError extends ExtractImageState {
   List<Object?> get props => [message];
 }
 
-/// Submit loading state
 class SubmitLoading extends ExtractImageState {}
 
-/// Standard Loading state
 class ExtractImageLoading extends ExtractImageState {}
 
-/// Standard Success state
 class ExtractImageSuccess extends ExtractImageState {}
 
-/// Standard Empty state
 class ExtractImageEmpty extends ExtractImageState {}
 
-/// Standard Refreshing state
 class ExtractImageRefreshing extends ExtractImageState {}

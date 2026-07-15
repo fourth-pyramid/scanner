@@ -9,31 +9,30 @@ import 'package:qrscanner/core/theme/app_text_styles.dart';
 import 'package:qrscanner/core/widgets/custom_button.dart';
 import 'package:qrscanner/core/widgets/custom_text_field.dart';
 import 'package:qrscanner/features/card_scanner/presentation/pages/card_scanner_page.dart';
-import 'package:qrscanner/features/login/presentation/cubit/login_cubit.dart';
-import 'package:qrscanner/features/login/presentation/cubit/login_state.dart';
+import 'package:qrscanner/features/login/presentation/bloc/login_bloc.dart';
 
 class LogInView extends StatelessWidget {
   const LogInView({super.key});
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (context) => GetIt.I<LoginCubit>(),
+    create: (context) => GetIt.I<LoginBloc>(),
     child: Scaffold(
       backgroundColor: colorBackground,
       body: SafeArea(
-        child: BlocConsumer<LoginCubit, LoginState>(
+        child: BlocConsumer<LoginBloc, LoginState>(
           listener: (context, state) {
             if (state is LoginSuccess) {
               unawaited(MagicRouter.navigateAndPopAll(const CardScannerPage()));
             }
           },
           builder: (context, state) {
-            final cubit = LoginCubit.of(context);
+            final bloc = context.read<LoginBloc>();
 
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Form(
-                key: cubit.formKey,
+                key: bloc.formKey,
                 child: Column(
                   children: [
                     const SizedBox(height: 60),
@@ -98,88 +97,87 @@ class LogInView extends StatelessWidget {
                           const SizedBox(height: 8),
                           CustomTextField(
                             hint: 'Enter your email',
-                            controller: cubit.emailController,
+                            controller: bloc.emailController,
                             prefixIcon: const Icon(
                               Icons.mail_outline_rounded,
                               size: 20,
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
-                              }
-                              if (!RegExp(
-                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                              ).hasMatch(value)) {
-                                return 'Please enter a valid email';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            'Password',
-                            style: AppTextStyles.labelMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorTextPrimary,
+                                  return 'Please enter your email';
+                                }
+                                if (!RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                ).hasMatch(value)) {
+                                  return 'Please enter a valid email';
+                                }
+                                return null;
+                              },
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          CustomTextField(
-                            hint: 'Enter your password',
-                            secure: true,
-                            controller: cubit.passwordController,
-                            prefixIcon: const Icon(
-                              Icons.lock_outline_rounded,
-                              size: 20,
+                            const SizedBox(height: 20),
+                            Text(
+                              'Password',
+                              style: AppTextStyles.labelMedium.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: colorTextPrimary,
+                              ),
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your password';
-                              }
-                              if (value.length < 6) {
-                                return 'Password must be at least 6 characters';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // ─── Login Button ───
-                    BlocBuilder<LoginCubit, LoginState>(
-                      buildWhen: (previous, current) =>
-                          previous.runtimeType != current.runtimeType,
-                      builder: (context, state) => CustomButton(
-                        text: state is LoginLoading ? '' : 'Sign In',
-                        isLoading: state is LoginLoading,
-                        isIcon: state is! LoginLoading,
-                        icon: const Icon(
-                          Icons.login_rounded,
-                          color: Colors.white,
-                          size: 20,
+                            const SizedBox(height: 8),
+                            CustomTextField(
+                              hint: 'Enter your password',
+                              secure: true,
+                              controller: bloc.passwordController,
+                              prefixIcon: const Icon(
+                                Icons.lock_outline_rounded,
+                                size: 20,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your password';
+                                }
+                                if (value.length < 6) {
+                                  return 'Password must be at least 6 characters';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
                         ),
-                        onPress: () => _login(context),
                       ),
-                    ),
 
-                    const SizedBox(height: 32),
-                  ],
+                      const SizedBox(height: 28),
+
+                      // ─── Login Button ───
+                      BlocSelector<LoginBloc, LoginState, bool>(
+                        selector: (state) => state is LoginLoading,
+                        builder: (context, isLoading) => CustomButton(
+                          text: isLoading ? '' : 'Sign In',
+                          isLoading: isLoading,
+                          isIcon: !isLoading,
+                          icon: const Icon(
+                            Icons.login_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          onPress: () => _login(context),
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
-    ),
-  );
+    );
 
-  void _login(BuildContext context) async {
-    final cubit = LoginCubit.of(context);
-    if (cubit.formKey.currentState!.validate()) {
-      await cubit.login();
+  void _login(BuildContext context) {
+    final bloc = context.read<LoginBloc>();
+    if (bloc.formKey.currentState!.validate()) {
+      bloc.add(const LoginSubmitEvent());
     }
   }
 }

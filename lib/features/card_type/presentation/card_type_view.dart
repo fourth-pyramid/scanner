@@ -1,13 +1,11 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:qrscanner/core/router/router.dart';
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
-import 'package:qrscanner/features/card_type/presentation/cubit/card_type_cubit.dart';
-import 'package:qrscanner/features/card_type/presentation/cubit/card_type_state.dart';
-import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_cubit.dart';
+import 'package:qrscanner/features/card_type/presentation/bloc/card_type_bloc.dart';
+import 'package:qrscanner/features/extract_image/presentation/bloc/extract_image_bloc.dart';
 import 'package:qrscanner/features/extract_image/presentation/pages/extract_image_page.dart';
 
 class CardTypeView extends StatelessWidget {
@@ -23,97 +21,95 @@ class CardTypeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (context) {
-      final cubit = GetIt.I<CardTypeCubit>();
-      unawaited(cubit.getCategories());
-      return cubit;
-    },
-    child: BlocBuilder<CardTypeCubit, CardTypeState>(
-      buildWhen: (previous, current) =>
-          previous.runtimeType != current.runtimeType,
-      builder: (context, state) {
-        final cubit = CardTypeCubit.of(context);
-
-        return Scaffold(
-          backgroundColor: colorBackground,
-          appBar: AppBar(
-            title: Text('Select Card Type', style: AppTextStyles.titleMedium),
-            backgroundColor: colorSurface,
-            foregroundColor: colorPrimary,
-            centerTitle: true,
-            elevation: 0,
-            bottom: const PreferredSize(
-              preferredSize: Size.fromHeight(1),
-              child: Divider(height: 1, color: colorDivider),
-            ),
-          ),
-          body: state is CardTypeLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: colorPrimary),
-                )
-              : cubit.categories.isEmpty
-              ? const _EmptyState(
+    create: (context) => GetIt.I<CardTypeBloc>()..add(const GetCategoriesEvent()),
+    child: Scaffold(
+      backgroundColor: colorBackground,
+      appBar: AppBar(
+        title: Text('Select Card Type', style: AppTextStyles.titleMedium),
+        backgroundColor: colorSurface,
+        foregroundColor: colorPrimary,
+        centerTitle: true,
+        elevation: 0,
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, color: colorDivider),
+        ),
+      ),
+      body: BlocSelector<CardTypeBloc, CardTypeState, bool>(
+        selector: (state) => state is CardTypeLoading,
+        builder: (context, isLoading) {
+          if (isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(color: colorPrimary),
+            );
+          }
+          return BlocSelector<CardTypeBloc, CardTypeState, int>(
+            selector: (state) => context.read<CardTypeBloc>().categories.length,
+            builder: (context, categoriesCount) {
+              final bloc = context.read<CardTypeBloc>();
+              if (categoriesCount == 0) {
+                return const _EmptyState(
                   icon: Icons.dashboard_outlined,
                   message:
                       'No card types available.\nPlease check your server connection.',
-                )
-              : SafeArea(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(8, 20, 8, 32),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Available Types',
-                          style: AppTextStyles.titleSmall.copyWith(
-                            color: colorTextSecondary,
-                          ),
+                );
+              }
+              return SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(8, 20, 8, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Available Types',
+                        style: AppTextStyles.titleSmall.copyWith(
+                          color: colorTextSecondary,
                         ),
-                        const SizedBox(height: 14),
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 7,
-                                mainAxisSpacing: 7,
-                                childAspectRatio: 1.3,
-                              ),
-                          itemCount: cubit.categories.length,
-                          itemBuilder: (context, index) {
-                            final categories = cubit.categories;
-                            final item = categories[index];
-                            final fallbackImage =
-                                _fallbackImages[index % _fallbackImages.length];
+                      ),
+                      const SizedBox(height: 14),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 7,
+                              mainAxisSpacing: 7,
+                              childAspectRatio: 1.3,
+                            ),
+                        itemCount: categoriesCount,
+                        itemBuilder: (context, index) {
+                          final categories = bloc.categories;
+                          final item = categories[index];
+                          final fallbackImage =
+                              _fallbackImages[index % _fallbackImages.length];
 
-                            return _CategoryCard(
-                              fallbackImage: fallbackImage,
-                              label: item.name ?? '',
-                              onTap: () async {
-                                await MagicRouter.navigateTo(
-                                  BlocProvider(
-                                    create: (context) {
-                                      final cubit = GetIt.I<ExtractImageCubit>();
-                                      unawaited(cubit.loadHistoryCount());
-                                      return cubit;
-                                    },
-                                    child: ExtractImagePage(
-                                      scanType: item.name ?? '',
-                                      categoryId: item.id!,
-                                    ),
+                          return _CategoryCard(
+                            fallbackImage: fallbackImage,
+                            label: item.name ?? '',
+                            onTap: () async {
+                              await MagicRouter.navigateTo(
+                                BlocProvider(
+                                  create: (context) => GetIt.I<ExtractImageBloc>()
+                                    ..add(const LoadHistoryCountEvent()),
+                                  child: ExtractImagePage(
+                                    scanType: item.name ?? '',
+                                    categoryId: item.id!,
                                   ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
-        );
-      },
+              );
+            },
+          );
+        },
+      ),
     ),
   );
 }

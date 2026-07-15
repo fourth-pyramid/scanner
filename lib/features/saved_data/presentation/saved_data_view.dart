@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -7,19 +5,14 @@ import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
 import 'package:qrscanner/core/widgets/custom_text_field.dart';
 import 'package:qrscanner/features/saved_data/component/saved_data_card.dart';
-import 'package:qrscanner/features/saved_data/presentation/cubit/saved_data_cubit.dart';
-import 'package:qrscanner/features/saved_data/presentation/cubit/saved_data_state.dart';
+import 'package:qrscanner/features/saved_data/presentation/bloc/saved_data_bloc.dart';
 
 class SavedDataView extends StatelessWidget {
   const SavedDataView({super.key});
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (context) {
-      final cubit = GetIt.I<SavedDataCubit>();
-      unawaited(cubit.loadScans());
-      return cubit;
-    },
+    create: (context) => GetIt.I<SavedDataBloc>()..add(const LoadScansEvent()),
     child: Scaffold(
       backgroundColor: colorBackground,
       appBar: AppBar(
@@ -34,100 +27,116 @@ class SavedDataView extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: BlocBuilder<SavedDataCubit, SavedDataState>(
-          builder: (context, state) {
-            final cubit = SavedDataCubit.of(context);
-            final scans = cubit.scans;
-
-            if (state is SavedDataLoading || (state is SavedDataInitial && scans.isEmpty)) {
+        child: BlocSelector<SavedDataBloc, SavedDataState, bool>(
+          selector: (state) => state is SavedDataLoading,
+          builder: (context, isLoading) {
+            final bloc = context.read<SavedDataBloc>();
+            if (isLoading && bloc.scans.isEmpty) {
               return const Center(child: CircularProgressIndicator(color: colorPrimary));
             }
 
-            if (state is SavedDataError) {
-              return const _EmptyOrErrorState(
-                icon: Icons.cloud_off_outlined,
-                title: 'Connection Error',
-                message: 'Unable to load saved scans.\nPlease try again later.',
-                isError: true,
-              );
-            }
+            return BlocSelector<SavedDataBloc, SavedDataState, bool>(
+              selector: (state) => state is SavedDataError,
+              builder: (context, isError) {
+                if (isError) {
+                  return const _EmptyOrErrorState(
+                    icon: Icons.cloud_off_outlined,
+                    title: 'Connection Error',
+                    message: 'Unable to load saved scans.\nPlease try again later.',
+                    isError: true,
+                  );
+                }
 
-            return Column(
-              children: [
-                // ─── Stats Bar ───
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: colorSurface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: colorBorder, width: 1.2),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: colorPrimary.withAlpha(15),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.list_alt_rounded, size: 16, color: colorPrimary),
-                              const SizedBox(width: 6),
-                              Text(
-                                '${scans.length} Records',
-                                style: AppTextStyles.labelMedium.copyWith(
-                                  color: colorPrimary,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
+                return Column(
+                  children: [
+                    // ─── Stats Bar ───
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: colorSurface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: colorBorder, width: 1.2),
                         ),
-                        const Spacer(),
-                        Row(
+                        child: Row(
                           children: [
-                            _ActionChip(label: 'Excel', icon: Icons.table_chart_outlined, onTap: () {}),
-                            const SizedBox(width: 8),
-                            _ActionChip(label: 'Email', icon: Icons.email_outlined, onTap: () {}),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: colorPrimary.withAlpha(15),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.list_alt_rounded, size: 16, color: colorPrimary),
+                                  const SizedBox(width: 6),
+                                  BlocSelector<SavedDataBloc, SavedDataState, int>(
+                                    selector: (state) => bloc.scans.length,
+                                    builder: (context, scansCount) => Text(
+                                      '$scansCount Records',
+                                      style: AppTextStyles.labelMedium.copyWith(
+                                        color: colorPrimary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Spacer(),
+                            Row(
+                              children: [
+                                _ActionChip(label: 'Excel', icon: Icons.table_chart_outlined, onTap: () {}),
+                                const SizedBox(width: 8),
+                                _ActionChip(label: 'Email', icon: Icons.email_outlined, onTap: () {}),
+                              ],
+                            ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
 
-                // ─── Search ───
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-                  child: CustomTextField(
-                    hint: 'Search by PIN or serial…',
-                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                    onChanged: cubit.search,
-                  ),
-                ),
+                    // ─── Search ───
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                      child: CustomTextField(
+                        hint: 'Search by PIN or serial…',
+                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                        onChanged: (value) {
+                          bloc.add(SearchScansEvent(value));
+                        },
+                      ),
+                    ),
 
-                // ─── List ───
-                Expanded(
-                  child: scans.isEmpty
-                      ? const SingleChildScrollView(
-                          child: _EmptyOrErrorState(
-                            icon: Icons.inbox_outlined,
-                            title: 'No Scans Found',
-                            message:
-                                "You don't have any scans matching this search, or you haven't scanned anything yet.",
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: scans.length,
-                          itemBuilder: (context, index) => SavedDataCard(savedData: scans[index]),
-                        ),
-                ),
-              ],
+                    // ─── List ───
+                    Expanded(
+                      child: BlocSelector<SavedDataBloc, SavedDataState, int>(
+                        selector: (state) => bloc.scans.length,
+                        builder: (context, scansCount) {
+                          final scans = bloc.scans;
+                          if (scansCount == 0) {
+                            return const SingleChildScrollView(
+                              child: _EmptyOrErrorState(
+                                icon: Icons.inbox_outlined,
+                                title: 'No Scans Found',
+                                message:
+                                    "You don't have any scans matching this search, or you haven't scanned anything yet.",
+                              ),
+                            );
+                          }
+                          return ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: scansCount,
+                            itemBuilder: (context, index) => SavedDataCard(savedData: scans[index]),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
             );
           },
         ),

@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_classes_with_only_static_members
 
 import 'package:get_storage/get_storage.dart';
-import 'package:qrscanner/core/appStorage/user_model.dart';
 import 'package:qrscanner/core/router/router.dart';
+import 'package:qrscanner/features/login/data/models/user_model.dart';
 import 'package:qrscanner/features/login/presentation/login_view.dart';
 
 abstract class AppStorage {

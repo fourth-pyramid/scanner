@@ -5,16 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
-import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_cubit.dart';
-import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_state.dart';
+import 'package:qrscanner/features/extract_image/presentation/bloc/extract_image_bloc.dart';
 
 class ImagePreviewWidget extends StatelessWidget {
   const ImagePreviewWidget({super.key});
 
   @override
   Widget build(BuildContext context) =>
-      BlocSelector<ExtractImageCubit, ExtractImageState, File?>(
-        selector: (state) => context.read<ExtractImageCubit>().currentImage,
+      BlocSelector<ExtractImageBloc, ExtractImageState, File?>(
+        selector: (state) => context.read<ExtractImageBloc>().currentImage,
         builder: (context, previewFile) => Container(
           width: double.infinity,
           height: MediaQuery.of(context).size.height * 0.3,

@@ -8,8 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
 import 'package:qrscanner/core/widgets/snack_bar.dart';
-import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_cubit.dart';
-import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_state.dart';
+import 'package:qrscanner/features/extract_image/presentation/bloc/extract_image_bloc.dart';
 
 // Import refactored smaller widgets
 import 'package:qrscanner/features/extract_image/presentation/widgets/camera_button_widget.dart';
@@ -60,8 +59,8 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
       }
 
       if (context.mounted) {
-        context.read<ExtractImageCubit>().setImage(sourceFile);
-        await context.read<ExtractImageCubit>().processImage();
+        context.read<ExtractImageBloc>().add(SetImageEvent(sourceFile));
+        context.read<ExtractImageBloc>().add(const ProcessImageEvent());
       }
     } on Object catch (e) {
       if (context.mounted) {
@@ -71,7 +70,7 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
   }
 
   @override
-  Widget build(BuildContext context) => BlocListener<ExtractImageCubit, ExtractImageState>(
+  Widget build(BuildContext context) => BlocListener<ExtractImageBloc, ExtractImageState>(
       listener: (context, state) {
         if (state is ScanResultLoaded) {
           _pinController.text = formatPin4343(state.pin ?? '');
@@ -85,7 +84,7 @@ class _ExtractImagePageState extends State<ExtractImagePage> {
           _pinController.clear();
           _serialController.clear();
           // Clear image and reset state
-          context.read<ExtractImageCubit>().reset();
+          context.read<ExtractImageBloc>().add(const ResetEvent());
         }
       },
       child: Scaffold(

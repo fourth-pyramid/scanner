@@ -1,4 +1,4 @@
-import 'package:equatable/equatable.dart';
+part of 'card_scanner_bloc.dart';
 
 // ponytail: standard 6 states for card scanner
 abstract class CardScannerState extends Equatable {

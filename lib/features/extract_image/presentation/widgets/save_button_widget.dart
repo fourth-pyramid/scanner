@@ -5,8 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
 import 'package:qrscanner/core/widgets/custom_button.dart';
-import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_cubit.dart';
-import 'package:qrscanner/features/extract_image/presentation/cubit/extract_image_state.dart';
+import 'package:qrscanner/features/extract_image/presentation/bloc/extract_image_bloc.dart';
 
 class SaveButtonWidget extends StatelessWidget {
   const SaveButtonWidget({
@@ -22,7 +21,7 @@ class SaveButtonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      BlocSelector<ExtractImageCubit, ExtractImageState, bool>(
+      BlocSelector<ExtractImageBloc, ExtractImageState, bool>(
         selector: (state) => state is SubmitLoading,
         builder: (context, isLoading) => CustomButton(
           text: isLoading ? '' : 'Save Record',
@@ -34,9 +33,9 @@ class SaveButtonWidget extends StatelessWidget {
             size: 20,
           ),
           onPress: () async {
-            final cubit = context.read<ExtractImageCubit>();
+            final bloc = context.read<ExtractImageBloc>();
 
-            if (cubit.currentImage == null) {
+            if (bloc.currentImage == null) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Row(
@@ -65,11 +64,6 @@ class SaveButtonWidget extends StatelessWidget {
               );
               return;
             }
-
-            // Update cubit with current text field values
-            cubit
-              ..updatePin(pinController.text)
-              ..updateSerial(serialController.text);
 
             // Validate PIN and Serial are not empty
             if (pinController.text.trim().isEmpty ||
@@ -103,11 +97,16 @@ class SaveButtonWidget extends StatelessWidget {
               return;
             }
 
+            // Update bloc with current text field values
+            bloc
+              ..add(UpdatePinEvent(pinController.text))
+              ..add(UpdateSerialEvent(serialController.text));
+
             final phoneType = Platform.isAndroid ? 'Samsung' : 'iPhone';
-            await cubit.submitScan(
+            bloc.add(SubmitScanEvent(
               categoryId: categoryId,
               phoneType: phoneType,
-            );
+            ));
           },
         ),
       );

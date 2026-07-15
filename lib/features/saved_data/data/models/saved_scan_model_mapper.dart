@@ -1,4 +1,4 @@
-import 'package:qrscanner/core/appStorage/my_scans_model.dart';
+import 'package:qrscanner/features/saved_data/data/models/my_scans_model.dart';
 import 'package:qrscanner/features/saved_data/domain/entities/saved_scan_entity.dart';
 
 /// Mapper to convert SavedData (Data) to SavedScanEntity (Domain)
