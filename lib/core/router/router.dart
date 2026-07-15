@@ -19,15 +19,11 @@ class MagicRouter {
       .currentState
       ?.pushAndRemoveUntil(_materialPageRoute(page), (_) => false);
 
-  static Future<dynamic>? navigateAndPopUntilFirstPage(Widget page) =>
-      navigatorKey.currentState?.pushAndRemoveUntil(
-        _materialPageRoute(page),
-        (route) => route.isFirst,
-      );
-
+  // ponytail: removed unused navigateAndPopUntilFirstPage
+  
   static void pop() => navigatorKey.currentState?.pop();
-  // ignore: strict_top_level_inference, type_annotate_public_apis
-  static void popWithResult<T>(T? result) => navigatorKey.currentState?.pop<T>(result);
+  
+  // ponytail: removed unused popWithResult
 
   static Route<dynamic> _materialPageRoute(Widget page) =>
       MaterialPageRoute(builder: (_) => page);

@@ -1,15 +1,20 @@
 import 'package:get_it/get_it.dart';
 
 import 'package:qrscanner/core/dioHelper/dio_helper.dart';
-import 'package:qrscanner/core/ocr/captured_card_scanner_service.dart';
+import 'package:qrscanner/core/network/network_info.dart';
 import 'package:qrscanner/core/ocr/card_scan_ocr_service.dart';
-import 'package:qrscanner/core/ocr/ocr_engine_factory.dart';
+// Card Scanner Feature
+import 'package:qrscanner/features/card_scanner/data/datasources/card_scanner_remote_datasource.dart';
+import 'package:qrscanner/features/card_scanner/data/repositories/card_scanner_repository_impl.dart';
+import 'package:qrscanner/features/card_scanner/domain/repositories/card_scanner_repository.dart';
+import 'package:qrscanner/features/card_scanner/domain/usecases/clear_data_usecase.dart';
+import 'package:qrscanner/features/card_scanner/presentation/cubit/card_scanner_cubit.dart';
 // Card Type Feature
 import 'package:qrscanner/features/card_type/data/datasources/card_type_remote_datasource.dart';
 import 'package:qrscanner/features/card_type/data/repositories/card_type_repository_impl.dart';
 import 'package:qrscanner/features/card_type/domain/repositories/card_type_repository.dart';
-import 'package:qrscanner/features/card_type/domain/usecases/clear_data_usecase.dart';
 import 'package:qrscanner/features/card_type/domain/usecases/get_categories_usecase.dart';
+// ponytail: removed ClearDataUseCase import
 import 'package:qrscanner/features/card_type/presentation/cubit/card_type_cubit.dart';
 // Extract Image Feature
 import 'package:qrscanner/features/extract_image/data/datasources/extract_image_remote_datasource.dart';
@@ -36,8 +41,8 @@ import 'package:qrscanner/features/settings/data/datasources/settings_local_data
 import 'package:qrscanner/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:qrscanner/features/settings/domain/repositories/settings_repository.dart';
 import 'package:qrscanner/features/settings/domain/usecases/get_settings_usecase.dart';
-import 'package:qrscanner/features/settings/domain/usecases/get_wifi_ip_usecase.dart';
 import 'package:qrscanner/features/settings/domain/usecases/save_settings_usecase.dart';
+// ponytail: removed GetWifiIpUseCase import
 import 'package:qrscanner/features/settings/presentation/cubit/settings_cubit.dart';
 
 /// Global service locator instance
@@ -50,6 +55,7 @@ Future<void> initDependencies() async {
   _initCore();
 
   // Initialize feature dependencies
+  _initCardScannerFeature();
   _initExtractImageFeature();
   _initLoginFeature();
   _initCardTypeFeature();
@@ -62,7 +68,7 @@ void _initCore() {
   // External
   getIt
     ..registerLazySingleton(() => DioHelper)
-    ..registerLazySingleton(CapturedCardScannerService.new);
+    ..registerLazySingleton<NetworkInfo>(NetworkInfoImpl.new);
 }
 
 /// Initialize extract_image feature dependencies
@@ -71,7 +77,6 @@ void _initExtractImageFeature() {
     ..registerLazySingleton(
       () => CardScanOcrService(
         pinOcrEngine: OcrEngineFactory.createPinEngine(),
-        serialOcrEngine: OcrEngineFactory.createSerialEngine(),
       ),
     )
     ..registerLazySingleton<ExtractImageRemoteDataSource>(
@@ -81,7 +86,7 @@ void _initExtractImageFeature() {
       () => ExtractImageRepositoryImpl(
         remoteDataSource: getIt(),
         cardScanOcrService: getIt(),
-        capturedCardScannerService: getIt(),
+        networkInfo: getIt(),
       ),
     )
     // Use Cases
@@ -107,7 +112,10 @@ void _initLoginFeature() {
     )
     // Repositories
     ..registerLazySingleton<LoginRepository>(
-      () => LoginRepositoryImpl(remoteDataSource: getIt()),
+      () => LoginRepositoryImpl(
+        remoteDataSource: getIt(),
+        networkInfo: getIt(),
+      ),
     )
     // Use Cases
     ..registerLazySingleton(() => LoginUseCase(repository: getIt()))
@@ -124,16 +132,17 @@ void _initCardTypeFeature() {
     )
     // Repositories
     ..registerLazySingleton<CardTypeRepository>(
-      () => CardTypeRepositoryImpl(remoteDataSource: getIt()),
+      () => CardTypeRepositoryImpl(
+        remoteDataSource: getIt(),
+        networkInfo: getIt(),
+      ),
     )
     // Use Cases
     ..registerLazySingleton(() => GetCategoriesUseCase(repository: getIt()))
-    ..registerLazySingleton(() => ClearDataUseCase(repository: getIt()))
     // Cubit - Factory because each screen needs its own instance
     ..registerFactory(
       () => CardTypeCubit(
         getCategoriesUseCase: getIt(),
-        clearDataUseCase: getIt(),
       ),
     );
 }
@@ -147,7 +156,10 @@ void _initSavedDataFeature() {
     )
     // Repositories
     ..registerLazySingleton<SavedDataRepository>(
-      () => SavedDataRepositoryImpl(remoteDataSource: getIt()),
+      () => SavedDataRepositoryImpl(
+        remoteDataSource: getIt(),
+        networkInfo: getIt(),
+      ),
     )
     // Use Cases
     ..registerLazySingleton(() => GetSavedScansUseCase(repository: getIt()))
@@ -169,13 +181,27 @@ void _initSettingsFeature() {
     // Use Cases
     ..registerLazySingleton(() => GetSettingsUseCase(repository: getIt()))
     ..registerLazySingleton(() => SaveSettingsUseCase(repository: getIt()))
-    ..registerLazySingleton(() => GetWifiIpUseCase(repository: getIt()))
     // Cubit - Factory because each screen needs its own instance
     ..registerFactory(
       () => SettingsCubit(
         getSettingsUseCase: getIt(),
         saveSettingsUseCase: getIt(),
-        getWifiIpUseCase: getIt(),
       ),
     );
+}
+
+/// Initialize card_scanner feature dependencies
+void _initCardScannerFeature() {
+  getIt
+    ..registerLazySingleton<CardScannerRemoteDataSource>(
+      CardScannerRemoteDataSourceImpl.new,
+    )
+    ..registerLazySingleton<CardScannerRepository>(
+      () => CardScannerRepositoryImpl(
+        remoteDataSource: getIt(),
+        networkInfo: getIt(),
+      ),
+    )
+    ..registerLazySingleton(() => ClearDataUseCase(repository: getIt()))
+    ..registerFactory(() => CardScannerCubit(clearDataUseCase: getIt()));
 }

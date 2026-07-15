@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:qrscanner/core/usecases/usecase.dart';
 import 'package:qrscanner/features/card_type/domain/entities/category_entity.dart';
-import 'package:qrscanner/features/card_type/domain/usecases/clear_data_usecase.dart';
 import 'package:qrscanner/features/card_type/domain/usecases/get_categories_usecase.dart';
 import 'package:qrscanner/features/card_type/presentation/cubit/card_type_state.dart';
 
@@ -12,10 +11,8 @@ import 'package:qrscanner/features/card_type/presentation/cubit/card_type_state.
 class CardTypeCubit extends Cubit<CardTypeState> {
   CardTypeCubit({
     required this.getCategoriesUseCase,
-    required this.clearDataUseCase,
   }) : super(CardTypeInitial());
   final GetCategoriesUseCase getCategoriesUseCase;
-  final ClearDataUseCase clearDataUseCase;
 
   List<CategoryEntity> _categories = [];
 
@@ -35,25 +32,7 @@ class CardTypeCubit extends Cubit<CardTypeState> {
     });
   }
 
-  /// Clear all data
-  Future<bool> clearData() async {
-    emit(CardTypeLoading());
-
-    final result = await clearDataUseCase(NoParams());
-
-    return result.fold(
-      (failure) {
-        emit(CardTypeError(message: failure.message));
-        return false;
-      },
-      (_) async {
-        emit(CardTypeCleared());
-        // Reload categories after clearing
-        await getCategories();
-        return true;
-      },
-    );
-  }
+  // ponytail: removed unused clearData functionality
 
   /// Static method to get cubit from context
   static CardTypeCubit of(BuildContext context) =>

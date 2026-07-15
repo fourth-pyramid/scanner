@@ -1,0 +1,23 @@
+{
+  "@@locale": "ar",
+  "appTitle": "نظام الإسكان",
+  "cardScannerManagement": "ماسح البطاقات وإدارتها",
+  "quickActions": "إجراءات سريعة",
+  "scanCard": "مسح البطاقة",
+  "startNewScan": "بدء مسح جديد",
+  "savedScans": "المسوحات المحفوظة",
+  "viewHistory": "عرض السجل",
+  "dataManagement": "إدارة البيانات",
+  "clearAllData": "مسح جميع البيانات",
+  "clearAllDataDesc": "حذف جميع سجلات المسح نهائياً",
+  "clearDataConfirmTitle": "مسح جميع البيانات",
+  "clearDataConfirmDesc": "هل أنت متأكد من رغبتك في مسح جميع بيانات المسح المحفوظة؟ لا يمكن التراجع عن هذا الإجراء.",
+  "cancel": "إلغاء",
+  "clear": "مسح",
+  "allDataCleared": "تم مسح جميع البيانات المحفوظة.",
+  "selectCardType": "اختر نوع البطاقة",
+  "availableTypes": "الأنواع المتاحة",
+  "noCardTypesAvailable": "لا توجد أنواع بطاقات متاحة.\nيرجى التحقق من اتصالك بالخادم.",
+  "errorConnecting": "خطأ في الاتصال بالخادم.",
+  "noInternet": "لا يوجد اتصال بالإنترنت."
+}

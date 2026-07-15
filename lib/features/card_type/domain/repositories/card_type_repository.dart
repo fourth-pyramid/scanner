@@ -7,7 +7,4 @@ import 'package:qrscanner/features/card_type/domain/entities/category_entity.dar
 abstract class CardTypeRepository {
   /// Get all categories
   Future<Either<Failure, List<CategoryEntity>>> getCategories();
-  
-  /// Clear all data
-  Future<Either<Failure, Unit>> clearData();
 }

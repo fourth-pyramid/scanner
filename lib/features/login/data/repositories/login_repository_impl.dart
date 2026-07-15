@@ -3,6 +3,7 @@ import 'package:qrscanner/core/appStorage/app_storage.dart';
 import 'package:qrscanner/core/appStorage/user_model.dart';
 import 'package:qrscanner/core/errors/exceptions.dart';
 import 'package:qrscanner/core/errors/failures.dart';
+import 'package:qrscanner/core/network/network_info.dart';
 import 'package:qrscanner/features/login/data/datasources/login_remote_datasource.dart';
 import 'package:qrscanner/features/login/data/models/user_model_mapper.dart';
 import 'package:qrscanner/features/login/domain/entities/user_entity.dart';
@@ -10,8 +11,13 @@ import 'package:qrscanner/features/login/domain/repositories/login_repository.da
 
 /// Implementation of LoginRepository
 class LoginRepositoryImpl implements LoginRepository {
-  LoginRepositoryImpl({required this.remoteDataSource});
+  LoginRepositoryImpl({
+    required this.remoteDataSource,
+    required this.networkInfo,
+  });
+
   final LoginRemoteDataSource remoteDataSource;
+  final NetworkInfo networkInfo;
 
   @override
   Future<Either<Failure, UserEntity>> login({
@@ -19,6 +25,9 @@ class LoginRepositoryImpl implements LoginRepository {
     required String password,
     required String phoneType,
   }) async {
+    if (!await networkInfo.isConnected) {
+      return const Left(NetworkFailure(message: 'No internet connection available.'));
+    }
     try {
       final data = await remoteDataSource.login(
         email: email,

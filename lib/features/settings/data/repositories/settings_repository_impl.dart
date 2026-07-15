@@ -35,15 +35,5 @@ class SettingsRepositoryImpl implements SettingsRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, String?>> getWifiIP() async {
-    try {
-      final ip = await localDataSource.getWifiIP();
-      return Right(ip);
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message));
-    } on Exception catch (e) {
-      return Left(UnexpectedFailure(message: e.toString()));
-    }
-  }
+  // ponytail: removed getWifiIP implementation
 }

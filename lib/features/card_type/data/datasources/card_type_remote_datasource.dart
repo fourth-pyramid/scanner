@@ -6,7 +6,6 @@ import 'package:qrscanner/core/errors/exceptions.dart';
 /// Remote data source for card type feature
 abstract class CardTypeRemoteDataSource {
   Future<Map<String, dynamic>> getCategories();
-  Future<void> clearData();
 }
 
 /// Implementation of remote data source
@@ -30,27 +29,5 @@ class CardTypeRemoteDataSourceImpl implements CardTypeRemoteDataSource {
     }
   }
 
-  @override
-  Future<void> clearData() async {
-    try {
-      final response = await DioHelper.post('delete', isAuth: true, body: {});
-      final data = response.data as Map<String, dynamic>;
-
-      if (data['status'] != 1) {
-        final message = (data['message'] as String?) ?? 'Unknown error';
-        throw ServerException(message: message);
-      }
-    } on DioException catch (e) {
-      throw NetworkException(
-        message: e.message ?? 'Network error occurred',
-        statusCode: e.response?.statusCode,
-      );
-    } on Exception catch (e) {
-      // Check if already an AppException to preserve the original message
-      if (e is AppException) {
-        rethrow;
-      }
-      throw ServerException(message: e.toString());
-    }
-  }
+  // ponytail: removed clearData remote source implementation
 }

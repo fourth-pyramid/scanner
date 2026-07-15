@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:qrscanner/core/usecases/usecase.dart';
 import 'package:qrscanner/features/settings/domain/usecases/get_settings_usecase.dart';
-import 'package:qrscanner/features/settings/domain/usecases/get_wifi_ip_usecase.dart';
 import 'package:qrscanner/features/settings/domain/usecases/save_settings_usecase.dart';
 import 'package:qrscanner/features/settings/presentation/cubit/settings_state.dart';
 
@@ -13,11 +12,9 @@ class SettingsCubit extends Cubit<SettingsState> {
   SettingsCubit({
     required this.getSettingsUseCase,
     required this.saveSettingsUseCase,
-    required this.getWifiIpUseCase,
   }) : super(SettingsInitial());
   final GetSettingsUseCase getSettingsUseCase;
   final SaveSettingsUseCase saveSettingsUseCase;
-  final GetWifiIpUseCase getWifiIpUseCase;
 
   final TextEditingController ipController = TextEditingController();
   final formKey = GlobalKey<FormState>();
@@ -36,23 +33,7 @@ class SettingsCubit extends Cubit<SettingsState> {
     });
   }
 
-  /// Auto-detect Wi-Fi IP
-  Future<void> getWifiIp() async {
-    final result = await getWifiIpUseCase(NoParams());
-
-    result.fold(
-      (failure) {
-        // Silently fail for IP detection
-      },
-      (ip) {
-        if (ip != null && ip.isNotEmpty) {
-          ipController.text = ip;
-          emit(SettingsWifiIpDetected(ip: ip));
-          emit(SettingsLoaded(baseUrl: ip));
-        }
-      },
-    );
-  }
+  // ponytail: removed unused getWifiIp detection logic
 
   /// Save settings
   Future<bool> saveSettings() async {

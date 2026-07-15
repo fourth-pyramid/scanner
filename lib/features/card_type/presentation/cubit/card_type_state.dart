@@ -34,5 +34,14 @@ class CardTypeError extends CardTypeState {
   List<Object?> get props => [message];
 }
 
-/// Data cleared state
-class CardTypeCleared extends CardTypeState {}
+/// Empty state
+class CardTypeEmpty extends CardTypeState {}
+
+/// Refreshing state
+class CardTypeRefreshing extends CardTypeState {
+  const CardTypeRefreshing({required this.categories});
+  final List<CategoryEntity> categories;
+
+  @override
+  List<Object?> get props => [categories];
+}

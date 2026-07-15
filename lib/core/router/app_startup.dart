@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qrscanner/core/appStorage/app_storage.dart';
-import 'package:qrscanner/features/card_scanner/card_scanner_view.dart';
+import 'package:qrscanner/features/card_scanner/presentation/pages/card_scanner_page.dart';
 import 'package:qrscanner/features/login/presentation/login_view.dart';
 import 'package:qrscanner/features/settings/presentation/settings_view.dart';
 
@@ -12,7 +12,7 @@ class AppStartup {
     }
 
     if (AppStorage.hasValidSession) {
-      return const CardScannerView();
+      return const CardScannerPage();
     }
 
     return const LogInView();

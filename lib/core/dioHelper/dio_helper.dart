@@ -1,22 +1,62 @@
 // ignore_for_file: avoid_classes_with_only_static_members
 
-import 'package:dio/dio.dart';
+import 'dart:convert';
+import 'dart:developer' as developer;
 
+import 'package:dio/dio.dart';
 import 'package:qrscanner/core/appStorage/app_storage.dart';
 
 class DioHelper {
   static const _defaultBaseUrl = 'https://bestscan.store/api/v1/';
 
-  static final Dio dioSingleton = Dio(
-    BaseOptions(
-      baseUrl: _defaultBaseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      followRedirects: false,
-      validateStatus: (status) => status != null && status < 500,
-      headers: {'Accept': 'application/json', 'Accept-Language': 'en'},
-    ),
-  );
+  static final Dio dioSingleton =
+      Dio(
+          BaseOptions(
+            baseUrl: _defaultBaseUrl,
+            connectTimeout: const Duration(seconds: 20),
+            receiveTimeout: const Duration(seconds: 20),
+            followRedirects: false,
+            validateStatus: (status) => status != null && status < 500,
+            headers: {'Accept': 'application/json', 'Accept-Language': 'en'},
+          ),
+        )
+        ..interceptors.add(
+          // ponytail: log full requests and responses without truncation
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              final body = options.data;
+              final bodyStr = body is FormData ? 'FormData' : (body != null ? jsonEncode(body) : 'Empty');
+              developer.log(
+                '--> ${options.method} ${options.uri}\nHeaders: ${options.headers}\nBody: $bodyStr',
+                name: 'API_REQUEST',
+              );
+              return handler.next(options);
+            },
+            onResponse: (response, handler) {
+              String prettyJson;
+              try {
+                prettyJson = const JsonEncoder.withIndent('  ').convert(response.data);
+              } on Object catch (_) {
+                prettyJson = response.data.toString();
+              }
+              developer.log(
+                '<-- ${response.statusCode} ${response.requestOptions.uri}\nResponse Body:\n$prettyJson',
+                name: 'API_RESPONSE',
+              );
+              return handler.next(response);
+            },
+            onError: (err, handler) {
+              String prettyJson;
+              try {
+                prettyJson = const JsonEncoder.withIndent('  ').convert(err.response?.data);
+              } on Object catch (_) {
+                prettyJson = err.response?.data.toString() ?? 'No details';
+              }
+              developer.log('<-- Error: ${err.message}\nResponse Body:\n$prettyJson', name: 'API_ERROR');
+              return handler.next(err);
+            },
+          ),
+        );
 
   // Update base URL dynamically
   static void updateBaseUrl(String baseUrl) {
@@ -47,44 +87,20 @@ class DioHelper {
         : <String, dynamic>{};
 
     // Use JSON content-type when sending body, FormData has its own content-type
-    final contentType = formData == null && body != null
-        ? 'application/json'
-        : null;
+    final contentType = formData == null && body != null ? 'application/json' : null;
 
     final options = contentType != null
         ? Options(headers: {...headers, 'Content-Type': contentType})
         : Options(headers: headers.isNotEmpty ? headers : null);
 
-    return dioSingleton.post(
-      path,
-      data: formData ?? body,
-      options: options,
-      onSendProgress: onSendProgress,
-    );
+    return dioSingleton.post(path, data: formData ?? body, options: options, onSendProgress: onSendProgress);
   }
 
-  // DELETE request
-  static Future<Response<dynamic>> delete(
-    String path, {
-    Map<String, dynamic>? body,
-    bool isAuth = true,
-  }) {
-    final headers = isAuth && AppStorage.getToken != null
-        ? {'Authorization': 'Bearer ${AppStorage.getToken}'}
-        : null;
-
-    return dioSingleton.delete(
-      path,
-      data: body,
-      options: Options(headers: headers),
-    );
-  }
+  // ponytail: removed unused delete wrapper
 
   // GET request
   static Future<Response<dynamic>> get(String path, {bool isAuth = true}) {
-    final headers = isAuth && AppStorage.getToken != null
-        ? {'Authorization': 'Bearer ${AppStorage.getToken}'}
-        : null;
+    final headers = isAuth && AppStorage.getToken != null ? {'Authorization': 'Bearer ${AppStorage.getToken}'} : null;
 
     return dioSingleton.get(path, options: Options(headers: headers));
   }

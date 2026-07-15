@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:qrscanner/core/errors/exceptions.dart';
 import 'package:qrscanner/core/errors/failures.dart';
-import 'package:qrscanner/core/ocr/captured_card_scanner_service.dart';
+import 'package:qrscanner/core/network/network_info.dart';
 import 'package:qrscanner/core/ocr/card_scan_ocr_service.dart';
 import 'package:qrscanner/features/extract_image/data/datasources/extract_image_remote_datasource.dart';
 import 'package:qrscanner/features/extract_image/domain/entities/card_data.dart';
@@ -13,12 +13,12 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
   ExtractImageRepositoryImpl({
     required this.remoteDataSource,
     required this.cardScanOcrService,
-    required this.capturedCardScannerService,
+    required this.networkInfo,
   });
 
   final ExtractImageRemoteDataSource remoteDataSource;
   final CardScanOcrService cardScanOcrService;
-  final CapturedCardScannerService capturedCardScannerService;
+  final NetworkInfo networkInfo;
 
   @override
   Future<Either<Failure, CardData>> processImage(File imageFile) async {
@@ -30,8 +30,6 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
           pin: result.pin,
           serial: result.serial,
           originalImage: imageFile,
-          pinCroppedImage: result.pinCroppedImage,
-          serialCroppedImage: result.serialCroppedImage,
           pinDetected: result.pinDetected,
           serialDetected: result.serialDetected,
         ),
@@ -51,6 +49,9 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
     required int categoryId,
     File? image,
   }) async {
+    if (!await networkInfo.isConnected) {
+      return const Left(NetworkFailure(message: 'No internet connection available.'));
+    }
     try {
       await remoteDataSource.submitScan(
         pin: pin,
@@ -71,6 +72,9 @@ class ExtractImageRepositoryImpl implements ExtractImageRepository {
 
   @override
   Future<Either<Failure, int>> getHistoryCount() async {
+    if (!await networkInfo.isConnected) {
+      return const Left(NetworkFailure(message: 'No internet connection available.'));
+    }
     try {
       final count = await remoteDataSource.getHistoryCount();
       return Right(count);
