@@ -59,8 +59,14 @@ class MyApp extends StatelessWidget {
             home: const Scaffold(body: Center(child: CircularProgressIndicator())),
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
+            themeMode: ThemeMode.light, // ponytail: force light theme
+            locale: const Locale('en'), // ponytail: force English locale
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling), // ponytail: force no font scale
+              child: child!,
+            ),
           );
         }
 
@@ -81,8 +87,14 @@ class MyApp extends StatelessWidget {
             ),
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
+            themeMode: ThemeMode.light, // ponytail: force light theme
+            locale: const Locale('en'), // ponytail: force English locale
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling), // ponytail: force no font scale
+              child: child!,
+            ),
           );
         }
 
@@ -94,8 +106,14 @@ class MyApp extends StatelessWidget {
             home: const AppDisabledView(),
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
+            themeMode: ThemeMode.light, // ponytail: force light theme
+            locale: const Locale('en'), // ponytail: force English locale
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling), // ponytail: force no font scale
+              child: child!,
+            ),
           );
         }
 
@@ -106,8 +124,14 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
           theme: AppTheme.lightTheme,
+          themeMode: ThemeMode.light, // ponytail: force light theme
+          locale: const Locale('en'), // ponytail: force English locale
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling), // ponytail: force no font scale
+            child: child!,
+          ),
         );
       },
     ),

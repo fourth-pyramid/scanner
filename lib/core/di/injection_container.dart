@@ -1,5 +1,4 @@
 import 'package:get_it/get_it.dart';
-
 import 'package:qrscanner/core/dioHelper/dio_helper.dart';
 import 'package:qrscanner/core/network/network_info.dart';
 import 'package:qrscanner/core/ocr/card_scan_ocr_service.dart';
@@ -75,19 +74,11 @@ void _initCore() {
 void _initExtractImageFeature() {
   getIt
     ..registerLazySingleton(
-      () => CardScanOcrService(
-        pinOcrEngine: OcrEngineFactory.createPinEngine(),
-      ),
+      () => CardScanOcrService(pinOcrEngine: OcrEngineFactory.createPinEngine()),
     )
-    ..registerLazySingleton<ExtractImageRemoteDataSource>(
-      ExtractImageRemoteDataSourceImpl.new,
-    )
+    ..registerLazySingleton<ExtractImageRemoteDataSource>(ExtractImageRemoteDataSourceImpl.new)
     ..registerLazySingleton<ExtractImageRepository>(
-      () => ExtractImageRepositoryImpl(
-        remoteDataSource: getIt(),
-        cardScanOcrService: getIt(),
-        networkInfo: getIt(),
-      ),
+      () => ExtractImageRepositoryImpl(remoteDataSource: getIt(), cardScanOcrService: getIt(), networkInfo: getIt()),
     )
     // Use Cases
     ..registerLazySingleton(() => ProcessImageUseCase(repository: getIt()))
@@ -95,11 +86,7 @@ void _initExtractImageFeature() {
     ..registerLazySingleton(() => GetHistoryCountUseCase(repository: getIt()))
     // Bloc - Factory because each screen needs its own instance
     ..registerFactory(
-      () => ExtractImageBloc(
-        processImageUseCase: getIt(),
-        submitScanUseCase: getIt(),
-        getHistoryCountUseCase: getIt(),
-      ),
+      () => ExtractImageBloc(processImageUseCase: getIt(), submitScanUseCase: getIt(), getHistoryCountUseCase: getIt()),
     );
 }
 
@@ -107,16 +94,9 @@ void _initExtractImageFeature() {
 void _initLoginFeature() {
   // Data Sources
   getIt
-    ..registerLazySingleton<LoginRemoteDataSource>(
-      LoginRemoteDataSourceImpl.new,
-    )
+    ..registerLazySingleton<LoginRemoteDataSource>(LoginRemoteDataSourceImpl.new)
     // Repositories
-    ..registerLazySingleton<LoginRepository>(
-      () => LoginRepositoryImpl(
-        remoteDataSource: getIt(),
-        networkInfo: getIt(),
-      ),
-    )
+    ..registerLazySingleton<LoginRepository>(() => LoginRepositoryImpl(remoteDataSource: getIt(), networkInfo: getIt()))
     // Use Cases
     ..registerLazySingleton(() => LoginUseCase(repository: getIt()))
     // Bloc - Factory because each screen needs its own instance
@@ -127,39 +107,25 @@ void _initLoginFeature() {
 void _initCardTypeFeature() {
   // Data Sources
   getIt
-    ..registerLazySingleton<CardTypeRemoteDataSource>(
-      CardTypeRemoteDataSourceImpl.new,
-    )
+    ..registerLazySingleton<CardTypeRemoteDataSource>(CardTypeRemoteDataSourceImpl.new)
     // Repositories
     ..registerLazySingleton<CardTypeRepository>(
-      () => CardTypeRepositoryImpl(
-        remoteDataSource: getIt(),
-        networkInfo: getIt(),
-      ),
+      () => CardTypeRepositoryImpl(remoteDataSource: getIt(), networkInfo: getIt()),
     )
     // Use Cases
     ..registerLazySingleton(() => GetCategoriesUseCase(repository: getIt()))
     // Bloc - Factory because each screen needs its own instance
-    ..registerFactory(
-      () => CardTypeBloc(
-        getCategoriesUseCase: getIt(),
-      ),
-    );
+    ..registerFactory(() => CardTypeBloc(getCategoriesUseCase: getIt()));
 }
 
 /// Initialize saved_data feature dependencies
 void _initSavedDataFeature() {
   // Data Sources
   getIt
-    ..registerLazySingleton<SavedDataRemoteDataSource>(
-      SavedDataRemoteDataSourceImpl.new,
-    )
+    ..registerLazySingleton<SavedDataRemoteDataSource>(SavedDataRemoteDataSourceImpl.new)
     // Repositories
     ..registerLazySingleton<SavedDataRepository>(
-      () => SavedDataRepositoryImpl(
-        remoteDataSource: getIt(),
-        networkInfo: getIt(),
-      ),
+      () => SavedDataRepositoryImpl(remoteDataSource: getIt(), networkInfo: getIt()),
     )
     // Use Cases
     ..registerLazySingleton(() => GetSavedScansUseCase(repository: getIt()))
@@ -171,36 +137,22 @@ void _initSavedDataFeature() {
 void _initSettingsFeature() {
   // Data Sources
   getIt
-    ..registerLazySingleton<SettingsLocalDataSource>(
-      SettingsLocalDataSourceImpl.new,
-    )
+    ..registerLazySingleton<SettingsLocalDataSource>(SettingsLocalDataSourceImpl.new)
     // Repositories
-    ..registerLazySingleton<SettingsRepository>(
-      () => SettingsRepositoryImpl(localDataSource: getIt()),
-    )
+    ..registerLazySingleton<SettingsRepository>(() => SettingsRepositoryImpl(localDataSource: getIt()))
     // Use Cases
     ..registerLazySingleton(() => GetSettingsUseCase(repository: getIt()))
     ..registerLazySingleton(() => SaveSettingsUseCase(repository: getIt()))
     // Bloc - Factory because each screen needs its own instance
-    ..registerFactory(
-      () => SettingsBloc(
-        getSettingsUseCase: getIt(),
-        saveSettingsUseCase: getIt(),
-      ),
-    );
+    ..registerFactory(() => SettingsBloc(getSettingsUseCase: getIt(), saveSettingsUseCase: getIt()));
 }
 
 /// Initialize card_scanner feature dependencies
 void _initCardScannerFeature() {
   getIt
-    ..registerLazySingleton<CardScannerRemoteDataSource>(
-      CardScannerRemoteDataSourceImpl.new,
-    )
+    ..registerLazySingleton<CardScannerRemoteDataSource>(CardScannerRemoteDataSourceImpl.new)
     ..registerLazySingleton<CardScannerRepository>(
-      () => CardScannerRepositoryImpl(
-        remoteDataSource: getIt(),
-        networkInfo: getIt(),
-      ),
+      () => CardScannerRepositoryImpl(remoteDataSource: getIt(), networkInfo: getIt()),
     )
     ..registerLazySingleton(() => ClearDataUseCase(repository: getIt()))
     ..registerFactory(() => CardScannerBloc(clearDataUseCase: getIt()));
