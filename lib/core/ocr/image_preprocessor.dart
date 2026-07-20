@@ -1,62 +1,33 @@
+import 'dart:async' show unawaited;
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart' show compute;
-import 'package:image/image.dart' as img;
+import 'package:flutter_native_image_v2/flutter_native_image_v2.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:qrscanner/core/ocr/ocr_logger.dart';
 
 class ImagePreprocessorConfig {
-  const ImagePreprocessorConfig({
-    this.maxDimension = 1600,
-    this.contrast = 1.25,
-    this.brightness = 1.05,
-    this.applySharpen = true,
-    this.grayscale = true,
-    this.jpegQuality = 92,
-  });
+  const ImagePreprocessorConfig({this.minLongestSide = 3600, this.maxLongestSide = 4000, this.jpegQuality = 92});
 
-  final int maxDimension;
-  final double contrast;
-  final double brightness;
-  final bool applySharpen;
-  final bool grayscale;
+  /// If the image's longest side is smaller than this, it gets upscaled up
+  /// to it. Small/unclear digits (like a faint or distant photo of the
+  /// scratch panel) benefit far more from more pixels than from
+  /// grayscale/contrast/sharpen tricks — those can't recover detail that
+  /// isn't there, upscaling at least gives the OCR model a bigger target.
+  final int minLongestSide;
+
+  /// If the image's longest side is larger than this, it gets downscaled
+  /// to it. The OCR model gets no extra accuracy from pixels beyond this —
+  /// it just means more bytes to upload, which is the slowest part of the
+  /// pipeline (network upload dominates total scan time far more than the
+  /// on-device resize does). Keeping this well above `minLongestSide`
+  /// avoids fighting the upscale path.
+  final int maxLongestSide;
+
+  /// JPEG quality. 100 gives near-zero extra benefit for OCR of printed
+  /// digits/text but noticeably bloats file size (and therefore upload
+  /// time). ~90-92 is visually/functionally lossless for this use case.
   final int jpegQuality;
-}
-
-/// Top-level function so it can run inside `compute()` (isolate-safe: no
-/// closures over instance state).
-Uint8List _enhanceImageBytes(({Uint8List bytes, ImagePreprocessorConfig config}) args) {
-  final decoded = img.decodeImage(args.bytes);
-  if (decoded == null) return args.bytes;
-
-  var image = decoded;
-
-  // Downscale first – cheaper for every following operation and shrinks the
-  // base64 payload sent over the network.
-  final longestSide = image.width > image.height ? image.width : image.height;
-  if (longestSide > args.config.maxDimension) {
-    image = img.copyResize(
-      image,
-      width: image.width >= image.height ? args.config.maxDimension : null,
-      height: image.height > image.width ? args.config.maxDimension : null,
-      interpolation: img.Interpolation.average,
-    );
-  }
-
-  if (args.config.grayscale) {
-    image = img.grayscale(image);
-  }
-
-  image = img.adjustColor(image, contrast: args.config.contrast, brightness: args.config.brightness);
-
-  if (args.config.applySharpen) {
-    // Simple unsharp-mask style 3x3 kernel – helps digit edges stand out
-    // for OCR without introducing much noise.
-    image = img.convolution(image, filter: [0, -1, 0, -1, 5, -1, 0, -1, 0]);
-  }
-
-  return Uint8List.fromList(img.encodeJpg(image, quality: args.config.jpegQuality));
 }
 
 /// Preprocesses card images on-device before they're sent to OCR.
@@ -66,14 +37,94 @@ class ImagePreprocessor {
   final ImagePreprocessorConfig config;
 
   Future<File> enhance(File input) async {
-    final bytes = await input.readAsBytes();
+    final sw = Stopwatch()..start();
+    final inputSize = await input.length();
+    logOcr('[1/5] 📂 Reading image file (${(inputSize / 1024).toStringAsFixed(1)} KB)...', name: 'OCR_PREPROCESS');
 
-    final enhancedBytes = await compute(_enhanceImageBytes, (bytes: bytes, config: config));
+    // 1. Decode image properties natively
+    final swDecode = Stopwatch()..start();
+    final properties = await FlutterNativeImage.getImageProperties(input.path);
+    final width = properties.width ?? 0;
+    final height = properties.height ?? 0;
+    logOcr('  [main] decode: ${swDecode.elapsedMilliseconds}ms', name: 'OCR_PREPROCESS');
+    logOcr('  [main] source dims: ${width}x$height', name: 'OCR_PREPROCESS');
+
+    logOcr('[2/5] ✅ File read done — ${sw.elapsedMilliseconds}ms', name: 'OCR_PREPROCESS');
+
+    final longestSide = width > height ? width : height;
+    var targetWidth = width;
+    var targetHeight = height;
+    var mode = 'no-resize';
+
+    if (longestSide < config.minLongestSide) {
+      final scale = config.minLongestSide / longestSide;
+      targetWidth = (width * scale).round();
+      targetHeight = (height * scale).round();
+      mode = 'upscale';
+    } else if (longestSide > config.maxLongestSide) {
+      final scale = config.maxLongestSide / longestSide;
+      targetWidth = (width * scale).round();
+      targetHeight = (height * scale).round();
+      mode = 'downscale';
+    }
+
+    // 2. Perform native resizing and JPEG encoding file-to-file
+    // ponytail: FlutterNativeImage resizes/compresses completely natively,
+    // avoiding huge Dart heap allocations, file reads/writes, or isolate overhead.
+    final swCompress = Stopwatch()..start();
+    final compressedFile = await FlutterNativeImage.compressImage(
+      input.path,
+      quality: config.jpegQuality,
+      targetWidth: targetWidth,
+      targetHeight: targetHeight,
+    );
+    logOcr(
+      '  [main] native resize & encode ($mode): ${swCompress.elapsedMilliseconds}ms | out dims: ${targetWidth}x$targetHeight',
+      name: 'OCR_PREPROCESS',
+    );
+
+    logOcr(
+      '[3/5] ✅ Image processing done — ${sw.elapsedMilliseconds}ms | output ${(await compressedFile.length() / 1024).toStringAsFixed(1)} KB',
+      name: 'OCR_PREPROCESS',
+    );
 
     final tempDir = await getTemporaryDirectory();
     final outPath = p.join(tempDir.path, 'card_scan_${DateTime.now().microsecondsSinceEpoch}.jpg');
     final outFile = File(outPath);
-    await outFile.writeAsBytes(enhancedBytes, flush: true);
+    await compressedFile.copy(outPath);
+    logOcr('[4/5] ✅ Enhanced file written — ${sw.elapsedMilliseconds}ms', name: 'OCR_PREPROCESS');
+
+    // Best-effort cleanup of old preprocessed files so the temp dir
+    // doesn't grow unboundedly across many scans. Failure here must never
+    // break the scan itself.
+    unawaited(_cleanupOldScans(tempDir, keep: outPath));
+
+    // Cleanup the temporary file generated by the plugin to avoid disk bloat
+    try {
+      await compressedFile.delete();
+    } on Object catch (_) {}
+
+    sw.stop();
+    logOcr('[5/5] 🏁 Preprocessing complete — total ${sw.elapsedMilliseconds}ms', name: 'OCR_PREPROCESS');
     return outFile;
+  }
+
+  Future<void> _cleanupOldScans(Directory tempDir, {required String keep}) async {
+    try {
+      final entries = tempDir.listSync();
+      for (final entry in entries) {
+        if (entry is! File) continue;
+        final name = p.basename(entry.path);
+        if (!name.startsWith('card_scan_') || !name.endsWith('.jpg')) continue;
+        if (entry.path == keep) continue;
+        try {
+          await entry.delete();
+        } on Object catch (_) {
+          // Ignore individual delete failures (file in use, race, etc.)
+        }
+      }
+    } on Object catch (e) {
+      logOcr('⚠️ Temp cleanup failed (non-fatal): $e', name: 'OCR_PREPROCESS');
+    }
   }
 }

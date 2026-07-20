@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
 import 'package:qrscanner/core/ocr/card_digit_extractor.dart';
+import 'package:qrscanner/core/ocr/ocr_logger.dart';
 
 /// Mistral OCR engine connecting to the Mistral AI OCR API.
 class MistralOcrEngine {
@@ -35,16 +35,31 @@ class MistralOcrEngine {
   /// Recognizes both PIN (14 digits) and Serial (12 digits) from a full card
   /// image using Mistral OCR. [image] should already be preprocessed.
   Future<({String? pin, String? serial, String? pinGuess, String? serialGuess})?> recognizeCard(File image) async {
-    if (!_isReadableImage(image)) return null;
+    if (!_isReadableImage(image)) {
+      logOcr('❌ Image not readable, aborting', name: 'OCR_ENGINE');
+      return null;
+    }
+
+    final sw = Stopwatch()..start();
 
     try {
       final bytes = await image.readAsBytes();
+      logOcr(
+        '[1/6] ✅ Image bytes read (${(bytes.length / 1024).toStringAsFixed(1)} KB) — ${sw.elapsedMilliseconds}ms',
+        name: 'OCR_ENGINE',
+      );
+
       final base64Str = base64Encode(bytes);
+      logOcr(
+        '[2/6] ✅ Base64 encoded (${(base64Str.length / 1024).toStringAsFixed(1)} KB) — ${sw.elapsedMilliseconds}ms',
+        name: 'OCR_ENGINE',
+      );
+
       final extension = p.extension(image.path).toLowerCase();
       final mimeType = extension == '.png' ? 'image/png' : 'image/jpeg';
       final dataUrl = 'data:$mimeType;base64,$base64Str';
 
-      developer.log('MistralOCR recognizeCard posting to: $_ocrEndpoint', name: 'OCR_ENGINE');
+      logOcr('[3/6] 🚀 Uploading to Mistral API...', name: 'OCR_ENGINE');
       final response = await _dio.post<Map<String, dynamic>>(
         _ocrEndpoint,
         data: {
@@ -53,11 +68,16 @@ class MistralOcrEngine {
         },
         options: Options(headers: {'Authorization': 'Bearer $_mistralApiKey', 'Content-Type': 'application/json'}),
       );
+      logOcr('[4/6] ✅ API response received — ${sw.elapsedMilliseconds}ms', name: 'OCR_ENGINE');
 
       final data = response.data;
-      if (data == null) return null;
+      if (data == null) {
+        logOcr('❌ API returned null data', name: 'OCR_ENGINE');
+        return null;
+      }
 
       final pages = data['pages'] as List<dynamic>? ?? const [];
+      logOcr('[5/6] 📄 Parsing ${pages.length} page(s)...', name: 'OCR_ENGINE');
 
       String? pin;
       String? serial;
@@ -68,9 +88,14 @@ class MistralOcrEngine {
         final pageMap = page as Map<String, dynamic>;
         final rawMarkdown = pageMap['markdown'] as String? ?? '';
 
-        developer.log('MistralOCR markdown output:\n$rawMarkdown', name: 'OCR_ENGINE');
+        logOcr('📝 Raw markdown (${rawMarkdown.length} chars):\n$rawMarkdown', name: 'OCR_ENGINE');
 
         final result = _extractor.extractFromMarkdown(rawMarkdown);
+        logOcr(
+          '🔍 Extracted → pin: ${result.pin ?? "null"}, serial: ${result.serial ?? "null"}, pinGuess: ${result.pinGuess ?? "null"}, serialGuess: ${result.serialGuess ?? "null"}',
+          name: 'OCR_ENGINE',
+        );
+
         pin ??= result.pin;
         serial ??= result.serial;
         pinGuess ??= result.pinGuess;
@@ -79,6 +104,12 @@ class MistralOcrEngine {
         if (pin != null && serial != null) break;
       }
 
+      sw.stop();
+      logOcr(
+        '[6/6] 🏁 Recognition complete — total ${sw.elapsedMilliseconds}ms | pin: ${pin != null ? "✅" : "❌"}, serial: ${serial != null ? "✅" : "❌"}',
+        name: 'OCR_ENGINE',
+      );
+
       return (
         pin: pin,
         serial: serial,
@@ -86,10 +117,12 @@ class MistralOcrEngine {
         serialGuess: serial == null ? serialGuess : null,
       );
     } on DioException catch (e) {
-      developer.log('MistralOCR recognizeCard DioError: ${e.message}, response: ${e.response}', name: 'OCR_ENGINE');
+      sw.stop();
+      logOcr('❌ DioError at ${sw.elapsedMilliseconds}ms: ${e.message}, response: ${e.response}', name: 'OCR_ENGINE');
       return null;
     } on Object catch (e) {
-      developer.log('MistralOCR recognizeCard generic error: $e', name: 'OCR_ENGINE');
+      sw.stop();
+      logOcr('❌ Error at ${sw.elapsedMilliseconds}ms: $e', name: 'OCR_ENGINE');
       return null;
     }
   }
