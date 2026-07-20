@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:qrscanner/core/router/router.dart';
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
+import 'package:qrscanner/features/card_type/domain/entities/category_entity.dart';
 import 'package:qrscanner/features/card_type/presentation/bloc/card_type_bloc.dart';
 import 'package:qrscanner/features/extract_image/presentation/bloc/extract_image_bloc.dart';
 import 'package:qrscanner/features/extract_image/presentation/pages/extract_image_page.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
+// ponytail: view for selecting a scan card type with skeleton loading
 class CardTypeView extends StatelessWidget {
   const CardTypeView({super.key});
 
@@ -18,6 +22,11 @@ class CardTypeView extends StatelessWidget {
     'assets/images/50.jpeg',
     'assets/images/100.jpeg',
   ];
+
+  static final List<CategoryEntity> _dummyCategories = List.generate(
+    6,
+    (index) => CategoryEntity(id: index, name: 'Loading Card...', image: 'assets/images/20.jpeg'),
+  );
 
   @override
   Widget build(BuildContext context) => BlocProvider(
@@ -35,66 +44,83 @@ class CardTypeView extends StatelessWidget {
           child: Divider(height: 1, color: colorDivider),
         ),
       ),
-      body: BlocSelector<CardTypeBloc, CardTypeState, bool>(
-        selector: (state) => state is CardTypeLoading,
-        builder: (context, isLoading) {
-          if (isLoading) {
-            return const Center(child: CircularProgressIndicator(color: colorPrimary));
-          }
-          return BlocSelector<CardTypeBloc, CardTypeState, int>(
-            selector: (state) => context.read<CardTypeBloc>().categories.length,
-            builder: (context, categoriesCount) {
-              final bloc = context.read<CardTypeBloc>();
-              if (categoriesCount == 0) {
-                return const _EmptyState(
-                  icon: Icons.dashboard_outlined,
-                  message: 'No card types available.\nPlease check your server connection.',
-                );
-              }
-              return SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(8, 20, 8, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Available Types', style: AppTextStyles.titleSmall.copyWith(color: colorTextSecondary)),
-                      const SizedBox(height: 14),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 7,
-                          mainAxisSpacing: 7,
-                          childAspectRatio: 1.3,
-                        ),
-                        itemCount: categoriesCount,
-                        itemBuilder: (context, index) {
-                          final categories = bloc.categories;
-                          final item = categories[index];
-                          final fallbackImage = _fallbackImages[index % _fallbackImages.length];
+      body: Builder(
+        builder: (context) =>
+            BlocSelector<
+              CardTypeBloc,
+              CardTypeState,
+              ({bool isLoading, List<CategoryEntity> categories, bool hasError})
+            >(
+              selector: (state) => (
+                isLoading: state is CardTypeLoading,
+                categories: context.read<CardTypeBloc>().categories,
+                hasError: state is CardTypeError,
+              ),
+              builder: (context, data) {
+                if (data.hasError) {
+                  return const _EmptyState(
+                    icon: Icons.dashboard_outlined,
+                    message: 'No card types available.\nPlease check your server connection.',
+                  );
+                }
 
-                          return _CategoryCard(
-                            fallbackImage: fallbackImage,
-                            label: item.name ?? '',
-                            onTap: () async {
-                              await MagicRouter.navigateTo(
-                                BlocProvider(
-                                  create: (context) => GetIt.I<ExtractImageBloc>()..add(const LoadHistoryCountEvent()),
-                                  child: ExtractImagePage(scanType: item.name ?? '', categoryId: item.id!),
-                                ),
+                if (data.categories.isEmpty && !data.isLoading) {
+                  return const _EmptyState(
+                    icon: Icons.dashboard_outlined,
+                    message: 'No card types available.\nPlease check your server connection.',
+                  );
+                }
+
+                final displayCategories = data.isLoading ? _dummyCategories : data.categories;
+
+                return Skeletonizer(
+                  enabled: data.isLoading,
+                  ignoreContainers: true,
+
+                  child: SafeArea(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.fromLTRB(8.w, 20.h, 8.w, 32.h),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Available Types', style: AppTextStyles.titleSmall.copyWith(color: colorTextSecondary)),
+                          SizedBox(height: 14.h),
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 7.w,
+                              mainAxisSpacing: 7.h,
+                              childAspectRatio: 1.3,
+                            ),
+                            itemCount: displayCategories.length,
+                            itemBuilder: (context, index) {
+                              final item = displayCategories[index];
+                              final fallbackImage = _fallbackImages[index % _fallbackImages.length];
+
+                              return _CategoryCard(
+                                fallbackImage: fallbackImage,
+                                label: item.name ?? '',
+                                onTap: data.isLoading
+                                    ? () {} // ponytail: prevent click while loading
+                                    : () async => await MagicRouter.navigateTo(
+                                        BlocProvider(
+                                          create: (context) =>
+                                              GetIt.I<ExtractImageBloc>()..add(const LoadHistoryCountEvent()),
+                                          child: ExtractImagePage(scanType: item.name ?? '', categoryId: item.id!),
+                                        ),
+                                      ),
                               );
                             },
-                          );
-                        },
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            ),
       ),
     ),
   );
@@ -112,12 +138,12 @@ class _CategoryCard extends StatelessWidget {
     onTap: onTap,
     child: DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorBorder, width: 1.2),
-        boxShadow: [BoxShadow(color: colorPrimary.withAlpha(12), blurRadius: 10, offset: const Offset(0, 4))],
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: colorBorder, width: 1.2.r),
+        boxShadow: [BoxShadow(color: colorPrimary.withAlpha(12), blurRadius: 10.r, offset: Offset(0, 4.h))],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -128,7 +154,7 @@ class _CategoryCard extends StatelessWidget {
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
@@ -158,16 +184,16 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(
     child: Padding(
-      padding: const EdgeInsets.all(40),
+      padding: EdgeInsets.all(40.r),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.r),
             decoration: BoxDecoration(color: colorPrimary.withAlpha(12), shape: BoxShape.circle),
-            child: Icon(icon, size: 48, color: colorTextSecondary),
+            child: Icon(icon, size: 48.r, color: colorTextSecondary),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           Text(message, style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
         ],
       ),
