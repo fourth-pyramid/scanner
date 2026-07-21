@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:qrscanner/core/theme/app_colors.dart';
 import 'package:qrscanner/core/theme/app_text_styles.dart';
@@ -88,39 +89,50 @@ class _CustomTextFieldState extends State<CustomTextField> {
       prefixIcon: widget.prefixIcon,
       suffixIcon: widget.secure
           ? IconButton(
-              iconSize: 20,
-              icon: Icon(
-                _obscure
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
-                color: colorTextSecondary,
+              iconSize: 20.w,
+              icon: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, animation) => ScaleTransition(
+                  scale: animation,
+                  child: FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  ),
+                ),
+                child: Icon(
+                  _obscure
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  key: ValueKey<bool>(_obscure),
+                  color: colorTextSecondary,
+                ),
               ),
               onPressed: () => setState(() => _obscure = !_obscure),
             )
           : widget.suffixIcon,
       contentPadding: EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: widget.height,
+        horizontal: 16.w,
+        vertical: widget.height.h,
       ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(widget.radius),
+        borderRadius: BorderRadius.circular(widget.radius.r),
         borderSide: const BorderSide(color: colorBorder),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(widget.radius),
-        borderSide: const BorderSide(color: colorBorder, width: 1.2),
+        borderRadius: BorderRadius.circular(widget.radius.r),
+        borderSide: BorderSide(color: colorBorder, width: 1.2.w),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(widget.radius),
-        borderSide: const BorderSide(color: colorPrimary, width: 1.8),
+        borderRadius: BorderRadius.circular(widget.radius.r),
+        borderSide: BorderSide(color: colorPrimary, width: 1.8.w),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(widget.radius),
-        borderSide: const BorderSide(color: colorError, width: 1.2),
+        borderRadius: BorderRadius.circular(widget.radius.r),
+        borderSide: BorderSide(color: colorError, width: 1.2.w),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(widget.radius),
-        borderSide: const BorderSide(color: colorError, width: 1.8),
+        borderRadius: BorderRadius.circular(widget.radius.r),
+        borderSide: BorderSide(color: colorError, width: 1.8.w),
       ),
       errorStyle: AppTextStyles.bodySmall.copyWith(color: colorError),
     ),
